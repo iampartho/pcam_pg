@@ -28,7 +28,7 @@ class ImageDataset(Dataset):
             for line in f:
                 labels = []
                 fields = line.strip('\n').split(',')
-                image_path = "content/pcam_pg"+fields[0]
+                image_path = "/content/pcam_pg"+fields[0]
                 flg_enhance = False # what is this shit ?
                 for index, value in enumerate(fields[5:]):
                     if index == 5 or index == 8: # targeting class header[10] and header[13]
