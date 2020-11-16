@@ -1,6 +1,6 @@
 {
-    "train_csv": "./content/pcam_pg/bin/train.csv",
-    "dev_csv": "./content/pcam_pg/bin/dev.csv",
+    "train_csv": "/content/pcam_pg/config/train.csv",
+    "dev_csv": "/content/pcam_pg/config/dev.csv",
     "backbone": "densenet169",
     "width": 256,
     "height": 256,
