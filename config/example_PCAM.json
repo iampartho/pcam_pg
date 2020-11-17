@@ -17,7 +17,7 @@
     "batch_weight": true,
     "enhance_index": [2,6],
     "enhance_times": 1,
-    "pos_weight": [2,2,1,1,1],
+    "pos_weight": [2,2,2,1,1],
     "train_batch_size": 24,
     "dev_batch_size": 24,
     "pretrained": true,

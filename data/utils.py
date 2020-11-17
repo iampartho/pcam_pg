@@ -24,6 +24,7 @@ def border_pad(image, cfg):
 
 
 def fix_ratio(image, cfg):
+    print("\n\n\nThis is image shape\n\n", image.shape)
     h, w, c = image.shape
 
     if h >= w:
@@ -51,7 +52,7 @@ def transform(image, cfg):
             image,
             (cfg.gaussian_blur, cfg.gaussian_blur), 0)
 
-    image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB) # converting image to RGB
+    #image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB) # converting image to RGB
 
     image = fix_ratio(image, cfg)
     # augmentation for train or co_train
