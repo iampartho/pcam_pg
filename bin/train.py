@@ -121,6 +121,12 @@ def train_epoch(summary, summary_dev, cfg, args, model, dataloader,
                 .format(time.strftime("%Y-%m-%d %H:%M:%S"),
                         summary['epoch'] + 1, summary['step'], loss_str,
                         acc_str, time_spent))
+            print(
+                '{}, Train, Epoch : {}, Step : {}, Loss : {}, '
+                'Acc : {}, Run Time : {:.2f} sec'
+                .format(time.strftime("%Y-%m-%d %H:%M:%S"),
+                        summary['epoch'] + 1, summary['step'], loss_str,
+                        acc_str, time_spent))
 
             for t in range(num_tasks):
                 summary_writer.add_scalar(
@@ -159,6 +165,16 @@ def train_epoch(summary, summary_dev, cfg, args, model, dataloader,
                                        summary_dev['auc']))
 
             logging.info(
+                '{}, Dev, Step : {}, Loss : {}, Acc : {}, Auc : {},'
+                'Mean auc: {:.3f} ''Run Time : {:.2f} sec' .format(
+                    time.strftime("%Y-%m-%d %H:%M:%S"),
+                    summary['step'],
+                    loss_dev_str,
+                    acc_dev_str,
+                    auc_dev_str,
+                    summary_dev['auc'].mean(),
+                    time_spent))
+            print(
                 '{}, Dev, Step : {}, Loss : {}, Acc : {}, Auc : {},'
                 'Mean auc: {:.3f} ''Run Time : {:.2f} sec' .format(
                     time.strftime("%Y-%m-%d %H:%M:%S"),
@@ -214,6 +230,15 @@ def train_epoch(summary, summary_dev, cfg, args, model, dataloader,
                 if best_dict['best_idx'] > cfg.save_top_k:
                     best_dict['best_idx'] = 1
                 logging.info(
+                    '{}, Best, Step : {}, Loss : {}, Acc : {},Auc :{},'
+                    'Best Auc : {:.3f}' .format(
+                        time.strftime("%Y-%m-%d %H:%M:%S"),
+                        summary['step'],
+                        loss_dev_str,
+                        acc_dev_str,
+                        auc_dev_str,
+                        best_dict['auc_dev_best']))
+                print(
                     '{}, Best, Step : {}, Loss : {}, Acc : {},Auc :{},'
                     'Best Auc : {:.3f}' .format(
                         time.strftime("%Y-%m-%d %H:%M:%S"),
@@ -400,6 +425,16 @@ def run(args):
                 auc_dev_str,
                 summary_dev['auc'].mean(),
                 time_spent))
+        print(
+            '{}, Dev, Step : {}, Loss : {}, Acc : {}, Auc : {},' \
+            'Mean auc: {:.3f} ''Run Time : {:.2f} sec' .format(
+                time.strftime("%Y-%m-%d %H:%M:%S"),
+                summary_train['step'],
+                loss_dev_str,
+                acc_dev_str,
+                auc_dev_str,
+                summary_dev['auc'].mean(),
+                time_spent))
 
         for t in range(len(cfg.num_classes)):
             summary_writer.add_scalar(
@@ -447,6 +482,15 @@ def run(args):
             if best_dict['best_idx'] > cfg.save_top_k:
                 best_dict['best_idx'] = 1 # 3 taa file er moddhe konta best result er eita bujhar upay last-modified dekhe
             logging.info(
+                '{}, Best, Step : {}, Loss : {}, Acc : {},'
+                'Auc :{},Best Auc : {:.3f}' .format(
+                    time.strftime("%Y-%m-%d %H:%M:%S"),
+                    summary_train['step'],
+                    loss_dev_str,
+                    acc_dev_str,
+                    auc_dev_str,
+                    best_dict['auc_dev_best']))
+            print(
                 '{}, Best, Step : {}, Loss : {}, Acc : {},'
                 'Auc :{},Best Auc : {:.3f}' .format(
                     time.strftime("%Y-%m-%d %H:%M:%S"),
