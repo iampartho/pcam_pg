@@ -523,7 +523,7 @@
 			"file": "bin/train.py",
 			"settings":
 			{
-				"buffer_size": 20145,
+				"buffer_size": 22071,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -541,17 +541,18 @@
 			"file": "data/dataset.py",
 			"settings":
 			{
-				"buffer_size": 3541,
+				"buffer_size": 3560,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "/G/Dhaka-ai/train_text/class.json",
+			"file": "model/backbone/densenet.py",
 			"settings":
 			{
-				"buffer_size": 393,
-				"line_ending": "Windows"
+				"buffer_size": 10894,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
 			}
 		},
 		{
@@ -566,7 +567,7 @@
 			"file": "model/classifier.py",
 			"settings":
 			{
-				"buffer_size": 6517,
+				"buffer_size": 6903,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -657,6 +658,7 @@
 	],
 	"file_history":
 	[
+		"/G/Dhaka-ai/train_text/class.json",
 		"/G/Dhaka-ai/rapid_augmentation/mmdet/datasets/pipelines/formating.py",
 		"/G/Dhaka-ai/rapid_augmentation/mmdet/datasets/pipelines/transforms.py",
 		"/G/Dhaka-ai/for ensemble/visualize_csv.py",
@@ -667,7 +669,6 @@
 		"/G/ChesXpert/PCAM/Chexpert-master/model/attention_map.py",
 		"/G/Dhaka-ai/code_for_seperating_day_night.py",
 		"/G/Dhaka-ai/code_for_submission_creation.py",
-		"/G/Dhaka-ai/train_text/class.json",
 		"/G/VIP Cup 2020/Evaluation Metrices/All Final Scoring Scheme/mean_average_precision-master/calc_map.py",
 		"/G/ChesXpert/PCAM/Chexpert-master/data/dataset.py",
 		"/G/Dhaka-ai/augmented/augmented txt new/aug_4_2764.txt",
@@ -852,15 +853,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 20145,
+						"buffer_size": 22071,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								20145,
-								20145
+								0,
+								0
 							]
 						],
 						"settings":
@@ -912,15 +913,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 3541,
+						"buffer_size": 3560,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3311,
-								3311
+								0,
+								0
 							]
 						],
 						"settings":
@@ -930,7 +931,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 435.2,
 						"zoom_level": 1.0
 					},
 					"stack_index": 1,
@@ -938,27 +939,29 @@
 				},
 				{
 					"buffer": 3,
-					"file": "/G/Dhaka-ai/train_text/class.json",
+					"file": "model/backbone/densenet.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 393,
+						"buffer_size": 10894,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								376,
-								387
+								3801,
+								3801
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/JavaScript/JSON.sublime-syntax"
+							"syntax": "Packages/Python/Python.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
 						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.x": 248.0,
+						"translation.y": 1827.2,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
@@ -1000,15 +1003,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 6517,
+						"buffer_size": 6903,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								3439,
-								3439
+								0,
+								0
 							]
 						],
 						"settings":
