@@ -89,10 +89,10 @@ class Classifier(nn.Module):
                 )
 
             classifier = getattr(self, "fc_" + str(index))
-            if isinstance(classifier, nn.Conv2d):
-                classifier.weight.data.normal_(0, 0.01) #mean and std_deviation
-                                                        # but if we change the FC how will it change correspondingly
-                classifier.bias.data.zero_()
+            # if isinstance(classifier, nn.Conv2d):
+            #     classifier.weight.data.normal_(0, 0.01) #mean and std_deviation
+            #                                             # but if we change the FC how will it change correspondingly
+            #     classifier.bias.data.zero_()
 
     def _init_bn(self): 
         for index, num_class in enumerate(self.cfg.num_classes):
@@ -148,14 +148,18 @@ class Classifier(nn.Module):
                 feat_map = self.attention_map(feat_map) # this seems problematic
 
             classifier = getattr(self, "fc_" + str(index))
+            attention_weight = classifier.weight.data
+            #attention_weight = classifier.weight.data.normal_(0, 0.01)
+
+            attentioned_feat_map = torch.mul(feat_map, attention_weight)
             # (N, 1, H, W)
             logit_map = None
             if not (self.cfg.global_pool == 'AVG_MAX' or
                     self.cfg.global_pool == 'AVG_MAX_LSE'):
-                logit_map = classifier(feat_map)
+                logit_map = classifier(attentioned_feat_map)
                 logit_maps.append(logit_map.squeeze())
             # (N, C, 1, 1)
-            feat = self.global_pool(feat_map, logit_map)
+            feat = self.global_pool(attentioned_feat_map, logit_map)
 
             if self.cfg.fc_bn:
                 bn = getattr(self, "bn_" + str(index))

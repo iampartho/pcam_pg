@@ -30,8 +30,8 @@ def Aug(image):
     #         img = tvf.adjust_saturation(img, factor) # 0 ~ 3
     #     if np.random.rand() > 0.5:
     #         img = tvf.adjust_gamma(img, uniform(0.5, 3))
-    factor = 2 ** uniform(-1, 1)
-    image = tvf.adjust_contrast(image, factor) # 0.5 ~ 2
+    # factor = 2 ** uniform(-1, 1)
+    # image = tvf.adjust_contrast(image, factor) # 0.5 ~ 2
     
     img_aug = tfs.Compose([
         tfs.RandomAffine(degrees=(-15, 15), translate=(0.05, 0.05),
