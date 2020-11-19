@@ -567,7 +567,7 @@
 			"file": "model/classifier.py",
 			"settings":
 			{
-				"buffer_size": 6903,
+				"buffer_size": 7135,
 				"encoding": "UTF-8",
 				"line_ending": "Unix"
 			}
@@ -1003,7 +1003,7 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 6903,
+						"buffer_size": 7135,
 						"regions":
 						{
 						},

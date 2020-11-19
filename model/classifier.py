@@ -30,11 +30,11 @@ class Classifier(nn.Module):
         super(Classifier, self).__init__()
         self.cfg = cfg
         self.backbone = BACKBONES[cfg.backbone](cfg)
-        trained_kernel = self.backbone.features.conv0.weight #densenet specific
-        new_conv = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False) # changing the conv0
-        with torch.no_grad():
-            new_conv.weight[:,:] = torch.stack([torch.mean(trained_kernel, 1)]*1, dim=1) # loading the weights
-        self.backbone.features.conv0 = new_conv
+        #trained_kernel = self.backbone.features.conv0.weight #densenet specific
+        #new_conv = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False) # changing the conv0
+        #with torch.no_grad():
+        #    new_conv.weight[:,:] = torch.stack([torch.mean(trained_kernel, 1)]*1, dim=1) # loading the weights
+        #self.backbone.features.conv0 = new_conv
         self.global_pool = GlobalPool(cfg)
         self.expand = 1
         if cfg.global_pool == 'AVG_MAX':
@@ -89,10 +89,10 @@ class Classifier(nn.Module):
                 )
 
             classifier = getattr(self, "fc_" + str(index))
-            # if isinstance(classifier, nn.Conv2d):
-            #     classifier.weight.data.normal_(0, 0.01) #mean and std_deviation
-            #                                             # but if we change the FC how will it change correspondingly
-            #     classifier.bias.data.zero_()
+            if isinstance(classifier, nn.Conv2d):
+                classifier.weight.data.normal_(0, 0.01) #mean and std_deviation
+                                                        # but if we change the FC how will it change correspondingly
+                classifier.bias.data.zero_()
 
     def _init_bn(self): 
         for index, num_class in enumerate(self.cfg.num_classes):
@@ -148,7 +148,7 @@ class Classifier(nn.Module):
                 feat_map = self.attention_map(feat_map) # this seems problematic
 
             classifier = getattr(self, "fc_" + str(index))
-            attention_weight = classifier.weight.data
+            #attention_weight = classifier.weight.data
             #attention_weight = classifier.weight.data.normal_(0, 0.01)
 
             attentioned_feat_map = torch.mul(feat_map, attention_weight)

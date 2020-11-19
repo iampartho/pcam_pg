@@ -39,7 +39,7 @@ def fix_ratio(image, cfg):
 
     image = cv2.resize(image, dsize=(w_, h_), interpolation=cv2.INTER_LINEAR)
     #print("\n\n\nThis is image shape after resize\n\n", image.shape)
-    image = image.reshape(image.shape[0], -1, 1)
+    #image = image.reshape(image.shape[0], -1, 1)
     image = border_pad(image, cfg)
 
     return image
@@ -55,9 +55,9 @@ def transform(image, cfg):
             image,
             (cfg.gaussian_blur, cfg.gaussian_blur), 0)
 
-    #image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB) # converting image to RGB
+    image = cv2.cvtColor(image, cv2.COLOR_GRAY2RGB) # converting image to RGB
 
-    image = image.reshape(image.shape[0], -1, 1)
+    #image = image.reshape(image.shape[0], -1, 1)
 
 
     image = fix_ratio(image, cfg)
