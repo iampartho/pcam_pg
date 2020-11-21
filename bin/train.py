@@ -334,7 +334,7 @@ def run(args):
     if args.pre_train is not None:
         if os.path.exists(args.pre_train):
             ckpt = torch.load(args.pre_train, map_location=device)
-            model.module.load_state_dict(ckpt)
+            model.module.load_state_dict(ckpt, strict=False)
     optimizer = get_optimizer(model.parameters(), cfg)
     # ei 10 line Ana bujhabe
     src_folder = os.path.dirname(os.path.abspath(__file__)) + '/../'

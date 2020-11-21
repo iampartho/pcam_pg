@@ -62,7 +62,7 @@ class Classifier(nn.Module):
             elif BACKBONES_TYPES[self.cfg.backbone] == 'densenet':
                 setattr(
                     self,
-                    "fc_" +
+                    "pcam_fc_" +
                     str(index),
                     nn.Conv2d(
                         self.backbone.num_features *
@@ -88,7 +88,7 @@ class Classifier(nn.Module):
                     'Unknown backbone type : {}'.format(self.cfg.backbone)
                 )
 
-            classifier = getattr(self, "fc_" + str(index))
+            classifier = getattr(self, "pcam_fc_" + str(index))
             if isinstance(classifier, nn.Conv2d):
                 classifier.weight.data.normal_(0, 0.01) #mean and std_deviation
                                                         # but if we change the FC how will it change correspondingly
@@ -102,7 +102,7 @@ class Classifier(nn.Module):
             elif BACKBONES_TYPES[self.cfg.backbone] == 'densenet':
                 setattr(
                     self,
-                    "bn_" +
+                    "pcam_bn_" +
                     str(index),
                     nn.BatchNorm2d(
                         self.backbone.num_features *
@@ -139,30 +139,32 @@ class Classifier(nn.Module):
         # (N, C, H, W)
         feat_map = self.backbone(x) # according to the i/p size it returns [N, 1024, H, W]
                                     # for 224x224 it returns 7x7 and for 256x256 it returns 8x8 and for 512x512 it returns 16x16
+        
+        if self.cfg.attention_map != "None":
+            feat_map = self.attention_map(feat_map)
         # [(N, 1), (N,1),...] 
         logits = list()
         # [(N, H, W), (N, H, W),...]
         logit_maps = list()
         for index, num_class in enumerate(self.cfg.num_classes):
-            if self.cfg.attention_map != "None":
-                feat_map = self.attention_map(feat_map) # this seems problematic
+             # this seems problematic
 
-            classifier = getattr(self, "fc_" + str(index))
+            classifier = getattr(self, "pcam_fc_" + str(index))
             #attention_weight = classifier.weight.data
             #attention_weight = classifier.weight.data.normal_(0, 0.01)
 
-            attentioned_feat_map = torch.mul(feat_map, attention_weight)
+            #attentioned_feat_map = torch.mul(feat_map, attention_weight)
             # (N, 1, H, W)
             logit_map = None
             if not (self.cfg.global_pool == 'AVG_MAX' or
                     self.cfg.global_pool == 'AVG_MAX_LSE'):
-                logit_map = classifier(attentioned_feat_map)
+                logit_map = classifier(feat_map)
                 logit_maps.append(logit_map.squeeze())
             # (N, C, 1, 1)
-            feat = self.global_pool(attentioned_feat_map, logit_map)
+            feat = self.global_pool(feat_map, logit_map)
 
             if self.cfg.fc_bn:
-                bn = getattr(self, "bn_" + str(index))
+                bn = getattr(self, "pcam_bn_" + str(index))
                 feat = bn(feat)
             feat = F.dropout(feat, p=self.cfg.fc_drop, training=self.training)
             # (N, num_class, 1, 1)
