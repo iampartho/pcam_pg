@@ -1,0 +1,12 @@
+/content/pcam_pg/nas/public/CheXpert/CheXpert-v1.0/valid/patient64549/study1/view1_frontal.jpg
+/content/pcam_pg/nas/public/CheXpert/CheXpert-v1.0/valid/patient64548/study1/view1_frontal.jpg
+/content/pcam_pg/nas/public/CheXpert/CheXpert-v1.0/valid/patient64565/study1/view1_frontal.jpg
+/content/pcam_pg/nas/public/CheXpert/CheXpert-v1.0/valid/patient64545/study1/view1_frontal.jpg
+/content/pcam_pg/nas/public/CheXpert/CheXpert-v1.0/valid/patient64626/study1/view1_frontal.jpg
+/content/pcam_pg/nas/public/CheXpert/CheXpert-v1.0/valid/patient64721/study1/view1_frontal.jpg
+/content/pcam_pg/nas/public/CheXpert/CheXpert-v1.0/valid/patient64738/study1/view1_frontal.jpg
+/content/pcam_pg/nas/public/CheXpert/CheXpert-v1.0/valid/patient64542/study1/view1_frontal.jpg
+/content/pcam_pg/nas/public/CheXpert/CheXpert-v1.0/valid/patient64542/study1/view2_lateral.jpg
+/content/pcam_pg/nas/public/CheXpert/CheXpert-v1.0/valid/patient64547/study1/view1_frontal.jpg
+/content/pcam_pg/nas/public/CheXpert/CheXpert-v1.0/valid/patient64547/study1/view2_frontal.jpg
+/content/pcam_pg/nas/public/CheXpert/CheXpert-v1.0/valid/patient64547/study1/view3_lateral.jpg
