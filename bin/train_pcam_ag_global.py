@@ -26,9 +26,10 @@ from data.dataset import ImageDataset  # noqa
 from model.classifier_agcnn1 import Classifier  # noqa
 from utils.misc import lr_schedule  # noqa
 from model.utils import get_optimizer  # noqa
-from model.classifier_agcnn import *
-from model.classifier_agcnn_fusion import *
+#from model.classifier_agcnn import *
+#from model.classifier_agcnn_fusion import *
 import torchvision.transforms as transforms
+from model.utils import tensor2numpy
 
 parser = argparse.ArgumentParser(description='Train model')
 parser.add_argument('cfg_path', default=None, metavar='CFG_PATH', type=str,
@@ -87,27 +88,78 @@ preprocess = transforms.Compose([
 def Attention_gen_patchs(ori_image, fm_cuda):
     # feature map -> feature mask (using feature map to crop on the original image) -> crop -> patchs
     # fm_cuda => apatoto classifier er feat_map pass kortese
-    feature_conv = fm_cuda.data.cpu().numpy()
-    size_upsample = (256, 256) 
-    bz, nc, h, w = feature_conv.shape
+    # feature_conv = fm_cuda.data.cpu().numpy()
+    # size_upsample = (256, 256) 
+    # bz, nc, h, w = feature_conv.shape
 
-    patchs_cuda = torch.FloatTensor().cuda()
+    # patchs_cuda = torch.FloatTensor().cuda()
+
+    # for i in range(0, bz):
+    #     feature = feature_conv[i]
+    #     cam = feature.reshape((nc, h*w))
+    #     cam = cam.sum(axis=0)
+    #     cam = cam.reshape(h,w)
+    #     cam = cam - np.min(cam)
+    #     cam_img = cam / np.max(cam)
+    #     cam_img = np.uint8(255 * cam_img)
+
+    #     heatmap_bin = binImage(cv2.resize(cam_img, size_upsample))
+    #     heatmap_maxconn = selectMaxConnect(heatmap_bin)
+    #     heatmap_mask = heatmap_bin * heatmap_maxconn
+    #     #print(heatmap_mask)
+        
+    #     ind = np.argwhere(heatmap_mask != 0)
+    #     if not ind==[] :
+    #       minh = 0
+    #       minw = 0
+    #       maxh = size_upsample[0]
+    #       maxw = size_upsample[1]
+    #     else :
+    #       minh = min(ind[:,0])
+    #       minw = min(ind[:,1])
+    #       maxh = max(ind[:,0])
+    #       maxw = max(ind[:,1])
+        
+    #     # to ori image 
+    #     #print('xxxxxxxxxxxxxxxx')
+    #     # print(ori_image[i].shape)
+    #     # ori_img = ori_image[i].permute(1,2,0)
+    #     # print(ori_image[i].shape)
+    #     image = ori_image[i].numpy().reshape(256,256,3)
+    #     image = image[int(256*0.334):int(256*0.667),int(256*0.334):int(256*0.667),:]
+
+    #     image = cv2.resize(image, size_upsample)
+    #     image_crop = image[minh:maxh,minw:maxw,:] * 256 # because image was normalized before
+    #     image_crop = preprocess(Image.fromarray(image_crop.astype('uint8')).convert('RGB')) 
+
+    #     img_variable = torch.autograd.Variable(image_crop.reshape(3,256,256).unsqueeze(0).cuda())
+
+    #     patchs_cuda = torch.cat((patchs_cuda,img_variable),0)
+
+    fm_cuda = torch.stack(fm_cuda)
+    feature_conv = tensor2numpy(torch.sigmoid(fm_cuda))
+    size_upsample = (256, 256) 
+    num_cls, bz, h, w = feature_conv.shape
 
     for i in range(0, bz):
-        feature = feature_conv[i]
-        cam = feature.reshape((nc, h*w))
-        cam = cam.sum(axis=0)
-        cam = cam.reshape(h,w)
-        cam = cam - np.min(cam)
-        cam_img = cam / np.max(cam)
-        cam_img = np.uint8(255 * cam_img)
+        all_idx=[]
+        for j in range(num_cls):
+            feature = feature_conv[j, i, :, :]
+            # cam = feature.reshape((nc, h*w))
+            # cam = cam.sum(axis=0)
+            cam = cam.reshape(h,w)
+            cam = cam - np.min(cam)
+            cam_img = cam / np.max(cam)
+            cam_img = np.uint8(255 * cam_img)
 
-        heatmap_bin = binImage(cv2.resize(cam_img, size_upsample))
-        heatmap_maxconn = selectMaxConnect(heatmap_bin)
-        heatmap_mask = heatmap_bin * heatmap_maxconn
-        #print(heatmap_mask)
-        
-        ind = np.argwhere(heatmap_mask != 0)
+            heatmap_bin = binImage(cv2.resize(cam_img, size_upsample))
+            heatmap_maxconn = selectMaxConnect(heatmap_bin)
+            heatmap_mask = heatmap_bin * heatmap_maxconn
+            #print(heatmap_mask)
+            
+            ind = np.argwhere(heatmap_mask != 0)
+            all_idx += ind
+
         if not ind==[] :
           minh = 0
           minw = 0
@@ -125,7 +177,7 @@ def Attention_gen_patchs(ori_image, fm_cuda):
         # ori_img = ori_image[i].permute(1,2,0)
         # print(ori_image[i].shape)
         image = ori_image[i].numpy().reshape(256,256,3)
-        image = image[int(256*0.334):int(256*0.667),int(256*0.334):int(256*0.667),:]
+        #image = image[int(256*0.334):int(256*0.667),int(256*0.334):int(256*0.667),:]
 
         image = cv2.resize(image, size_upsample)
         image_crop = image[minh:maxh,minw:maxw,:] * 256 # because image was normalized before
@@ -136,21 +188,17 @@ def Attention_gen_patchs(ori_image, fm_cuda):
         patchs_cuda = torch.cat((patchs_cuda,img_variable),0)
 
     return patchs_cuda
+    
 
 def binImage(heatmap):
-    _, heatmap_bin = cv2.threshold(heatmap , 0 , 255 , cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+    #_, heatmap_bin = cv2.threshold(heatmap , 0 , 255 , cv2.THRESH_BINARY+cv2.THRESH_OTSU)
     # t in the paper
-    #_, heatmap_bin = cv2.threshold(heatmap , 178 , 255 , cv2.THRESH_BINARY)
+    _, heatmap_bin = cv2.threshold(heatmap , 178 , 255 , cv2.THRESH_BINARY)
     return heatmap_bin
 
 
 def selectMaxConnect(heatmap):
     labeled_img, num = label(heatmap, connectivity=2, background=0, return_num=True)    
-    print("\n\n\n\n")
-    print("This is heatmap shape " , heatmap.shape)
-    print("\n\n\n\n")
-    print("This is labeled_img shape ", labeled_img.shape)
-
     max_label = 0
     max_num = 0
     for i in range(1, num+1):
@@ -183,9 +231,9 @@ def train_epoch(summary, summary_dev, cfg, args, model_global,model_local, datal
         image_v, target = next(dataiter)
         image = image_v.to(device)
         target = target.to(device)
-        output_global,feat_list_global, feat_map = model_global(image)
+        output_global,feat_list_global, feat_map, logit_maps = model_global(image)
         #print(image_v.shape)
-        patch_var = Attention_gen_patchs(image_v,feat_map)
+        patch_var = Attention_gen_patchs(image_v,logit_maps)
         output_local,feat_list_local,_ = model_local(patch_var)
         
 

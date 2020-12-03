@@ -179,4 +179,4 @@ class Classifier(nn.Module):
             logits.append(logit)
             feat_list.append(feat)
 
-        return (logits, feat_list, feat_map)
+        return (logits, feat_list, feat_map, logit_maps)
