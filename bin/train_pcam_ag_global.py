@@ -141,13 +141,15 @@ def Attention_gen_patchs(ori_image, fm_cuda):
     size_upsample = (256, 256) 
     num_cls, bz, h, w = feature_conv.shape
 
+    patchs_cuda = torch.FloatTensor().cuda()
+
     for i in range(0, bz):
-        all_idx=[]
+        all_idx=np.array([])
         for j in range(num_cls):
             feature = feature_conv[j, i, :, :]
             # cam = feature.reshape((nc, h*w))
             # cam = cam.sum(axis=0)
-            cam = cam.reshape(h,w)
+            cam = feature.reshape(h,w)
             cam = cam - np.min(cam)
             cam_img = cam / np.max(cam)
             cam_img = np.uint8(255 * cam_img)
@@ -158,7 +160,12 @@ def Attention_gen_patchs(ori_image, fm_cuda):
             #print(heatmap_mask)
             
             ind = np.argwhere(heatmap_mask != 0)
-            all_idx += ind
+            if j==0:
+                all_idx = ind
+            else:
+
+                np.concatenate((all_idx, ind), axis=0)
+                #all_idx += ind
 
         if not ind==[] :
           minh = 0
@@ -166,10 +173,10 @@ def Attention_gen_patchs(ori_image, fm_cuda):
           maxh = size_upsample[0]
           maxw = size_upsample[1]
         else :
-          minh = min(ind[:,0])
-          minw = min(ind[:,1])
-          maxh = max(ind[:,0])
-          maxw = max(ind[:,1])
+          minh = min(all_idx[:,0])
+          minw = min(all_idx[:,1])
+          maxh = max(all_idx[:,0])
+          maxw = max(all_idx[:,1])
         
         # to ori image 
         #print('xxxxxxxxxxxxxxxx')
@@ -177,7 +184,7 @@ def Attention_gen_patchs(ori_image, fm_cuda):
         # ori_img = ori_image[i].permute(1,2,0)
         # print(ori_image[i].shape)
         image = ori_image[i].numpy().reshape(256,256,3)
-        #image = image[int(256*0.334):int(256*0.667),int(256*0.334):int(256*0.667),:]
+        image = image[int(256*0.334):int(256*0.667),int(256*0.334):int(256*0.667),:]
 
         image = cv2.resize(image, size_upsample)
         image_crop = image[minh:maxh,minw:maxw,:] * 256 # because image was normalized before
@@ -234,7 +241,7 @@ def train_epoch(summary, summary_dev, cfg, args, model_global,model_local, datal
         output_global,feat_list_global, feat_map, logit_maps = model_global(image)
         #print(image_v.shape)
         patch_var = Attention_gen_patchs(image_v,logit_maps)
-        output_local,feat_list_local,_ = model_local(patch_var)
+        output_local,feat_list_local,_, _ = model_local(patch_var)
         
 
 
@@ -433,10 +440,10 @@ def test_epoch(summary, cfg, args, model_global,model_local, dataloader):
         image_v, target = next(dataiter)
         image = image_v.to(device)
         target = target.to(device)
-        output_global,feat_list_global, feat_map = model_global(image)
+        output_global,feat_list_global, feat_map, logit_maps = model_global(image)
         #print(image_v.shape)
-        patch_var = Attention_gen_patchs(image_v,feat_map)
-        output_local,feat_list_local,_ = model_local(patch_var)
+        patch_var = Attention_gen_patchs(image_v,logit_maps)
+        output_local,feat_list_local,_,_ = model_local(patch_var)
         
         # different number of tasks
         for t in range(len(cfg.num_classes)):

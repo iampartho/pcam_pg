@@ -142,7 +142,7 @@ class Classifier(nn.Module):
         
         if self.cfg.attention_map != "None":
             feat_map = self.attention_map(feat_map)
-        # [(N, 1), (N,1),...] 
+        # [(N, 1), (N,1),...]
         logits = list()
         # [(N, H, W), (N, H, W),...]
         logit_maps = list()
