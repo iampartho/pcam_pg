@@ -132,6 +132,8 @@ class Heatmaper(object):
         prob_maps_np = tensor2numpy(torch.sigmoid(logit_maps))
         logit_maps_np = tensor2numpy(logit_maps)
 
+        cropped_image = get_crop_image(image_file, prob_maps_np)
+
         num_tasks = len(disease_classes)
         row_ = num_tasks // 3 + 1
         plt_fig = plt.figure(figsize=(10, row_*4), dpi=300)
@@ -163,4 +165,82 @@ class Heatmaper(object):
         plt_fig.tight_layout()
         figure_data = fig2data(plt_fig)
         plt.close()
-        return prefix_name, figure_data
+        return prefix_name, figure_data,cropped_image
+
+
+
+
+def binImage(heatmap):
+    #_, heatmap_bin = cv2.threshold(heatmap , 0 , 255 , cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+    # t in the paper
+    _, heatmap_bin = cv2.threshold(heatmap , 178 , 255 , cv2.THRESH_BINARY)
+    return heatmap_bin
+
+
+def selectMaxConnect(heatmap):
+    labeled_img, num = label(heatmap, connectivity=2, background=0, return_num=True)    
+    max_label = 0
+    max_num = 0
+    for i in range(1, num+1):
+        if np.sum(labeled_img == i) > max_num:
+            max_num = np.sum(labeled_img == i)
+            max_label = i
+    lcc = (labeled_img == max_label)
+    if max_num == 0:
+       lcc = (labeled_img == -1)
+    lcc = lcc + 0
+    return lcc 
+
+
+
+
+
+def get_crop_image(ori_image_path, feature_conv):
+    image = cv2.imread(ori_image_path)
+    size_upsample = (256, 256) 
+    all_idx=np.array([])
+    for j in range(5):
+        feature = feature_conv[0, i, :, :]
+        # cam = feature.reshape((nc, h*w))
+        # cam = cam.sum(axis=0)
+        cam = feature.reshape(h,w)
+        cam = cam - np.min(cam)
+        cam_img = cam / np.max(cam)
+        cam_img = np.uint8(255 * cam_img)
+
+        heatmap_bin = binImage(cv2.resize(cam_img, size_upsample))
+        heatmap_maxconn = selectMaxConnect(heatmap_bin)
+        heatmap_mask = heatmap_bin * heatmap_maxconn
+        #print(heatmap_mask)
+        
+        ind = np.argwhere(heatmap_mask != 0)
+        if j==0:
+            all_idx = ind
+        else:
+
+            np.concatenate((all_idx, ind), axis=0)
+            #all_idx += ind
+
+    if len(all_idx)==0 :
+      minh = 0
+      minw = 0
+      maxh = size_upsample[0]
+      maxw = size_upsample[1]
+    else :
+      minh = min(all_idx[:,0])
+      minw = min(all_idx[:,1])
+      maxh = max(all_idx[:,0])
+      maxw = max(all_idx[:,1])
+    
+    # to ori image 
+    #print('xxxxxxxxxxxxxxxx')
+    # print(ori_image[i].shape)
+    # ori_img = ori_image[i].permute(1,2,0)
+    # print(ori_image[i].shape)
+    #image = ori_image[i].numpy().reshape(256,256,3)
+    #image = image[int(256*0.334):int(256*0.667),int(256*0.334):int(256*0.667),:]
+
+    
+    image_crop = image[minh:maxh,minw:maxw,:] # because image was normalized before
+    image_crop = cv2.resize(image_crop, size_upsample)
+    return image_crop

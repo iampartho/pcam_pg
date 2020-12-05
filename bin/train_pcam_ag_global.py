@@ -167,7 +167,7 @@ def Attention_gen_patchs(ori_image, fm_cuda):
                 np.concatenate((all_idx, ind), axis=0)
                 #all_idx += ind
 
-        if not ind==[] :
+        if len(all_idx)==0 :
           minh = 0
           minw = 0
           maxh = size_upsample[0]
