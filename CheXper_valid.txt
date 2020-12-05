@@ -9,4 +9,7 @@
 /content/pcam_pg/nas/public/CheXpert/CheXpert-v1.0/valid/patient64542/study1/view2_lateral.jpg
 /content/pcam_pg/nas/public/CheXpert/CheXpert-v1.0/valid/patient64547/study1/view1_frontal.jpg
 /content/pcam_pg/nas/public/CheXpert/CheXpert-v1.0/valid/patient64547/study1/view2_frontal.jpg
-/content/pcam_pg/nas/public/CheXpert/CheXpert-v1.0/valid/patient64547/study1/view3_lateral.jpg
+/content/pcam_pg/nas/public/CheXpert/CheXpert-v1.0/valid/patient64657/study1/view1_frontal.jpg
+/content/pcam_pg/nas/public/CheXpert/CheXpert-v1.0/valid/patient64678/study1/view1_frontal.jpg
+/content/pcam_pg/nas/public/CheXpert/CheXpert-v1.0/valid/patient64739/study1/view1_frontal.jpg
+/content/pcam_pg/nas/public/CheXpert/CheXpert-v1.0/valid/patient64732/study1/view1_frontal.jpg

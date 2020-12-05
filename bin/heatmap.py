@@ -83,18 +83,20 @@ def run(args):
     heatmaper = Heatmaper(args.alpha, args.prefix, cfg, model, device)
     assert args.prefix in ['none', *(disease_classes)]
     with open(args.txt_file) as f:
-        for line in f:
-            time_start = time.time()
-            jpg_file = line.strip('\n')
-            prefix, figure_data = heatmaper.gen_heatmap(jpg_file)
-            bn = os.path.basename(jpg_file)
-            save_file = '{}/{}{}'.format(args.plot_path, prefix, bn)
-            assert cv2.imwrite(save_file, figure_data), "write failed!"
-            time_spent = time.time() - time_start
-            logging.info(
-                '{}, {}, heatmap generated, Run Time : {:.2f} sec'
-                .format(time.strftime("%Y-%m-%d %H:%M:%S"),
-                        jpg_file, time_spent))
+        with open('CheXper_valid_gt.txt') as gt_f:
+            for line, gt_line in zip(f, gt_f):
+                time_start = time.time()
+                jpg_file = line.strip('\n')
+                prefix, figure_data = heatmaper.gen_heatmap(jpg_file)
+                bn = os.path.basename(jpg_file)
+                #save_file = '{}/{}{}'.format(args.plot_path, prefix, bn)
+                save_file = f"{args.plot_path}/Ground Truth={gt_line}.jpg"
+                assert cv2.imwrite(save_file, figure_data), "write failed!"
+                time_spent = time.time() - time_start
+                logging.info(
+                    '{}, {}, heatmap generated, Run Time : {:.2f} sec'
+                    .format(time.strftime("%Y-%m-%d %H:%M:%S"),
+                            jpg_file, time_spent))
 
 
 def main():
