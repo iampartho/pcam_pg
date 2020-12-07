@@ -84,7 +84,7 @@ def run(args):
     assert args.prefix in ['none', *(disease_classes)]
     with open(args.txt_file) as f:
         i=0
-        with open('CheXper_valid_gt.txt') as gt_f:
+        with open('/content/pcam_pg/CheXper_valid_gt.txt') as gt_f:
             for line, gt_line in zip(f, gt_f):
                 time_start = time.time()
                 jpg_file = line.strip('\n')

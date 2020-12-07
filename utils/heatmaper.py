@@ -8,7 +8,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
 from data.utils import transform # noqa
 from model.utils import tensor2numpy # noqa
-
+from skimage.measure import label
 
 disease_classes = [
     'Cardiomegaly',
@@ -171,9 +171,9 @@ class Heatmaper(object):
 
 
 def binImage(heatmap):
-    #_, heatmap_bin = cv2.threshold(heatmap , 0 , 255 , cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+    _, heatmap_bin = cv2.threshold(heatmap , 0 , 255 , cv2.THRESH_BINARY+cv2.THRESH_OTSU)
     # t in the paper
-    _, heatmap_bin = cv2.threshold(heatmap , 178 , 255 , cv2.THRESH_BINARY)
+    #_, heatmap_bin = cv2.threshold(heatmap , 178 , 255 , cv2.THRESH_BINARY)
     return heatmap_bin
 
 
@@ -199,14 +199,15 @@ def get_crop_image(ori_image_path, feature_conv):
     image = cv2.imread(ori_image_path)
     size_upsample = (256, 256) 
     all_idx=np.array([])
-    for j in range(5):
-        feature = feature_conv[0, i, :, :]
+    cls_number, h, w = feature_conv.shape
+    for i in range(cls_number):
+        feature = feature_conv[i, :, :]
         # cam = feature.reshape((nc, h*w))
         # cam = cam.sum(axis=0)
         cam = feature.reshape(h,w)
-        cam = cam - np.min(cam)
-        cam_img = cam / np.max(cam)
-        cam_img = np.uint8(255 * cam_img)
+        #cam = cam - np.min(cam)
+        #cam_img = cam / np.max(cam)
+        cam_img = np.uint8(255 * cam)
 
         heatmap_bin = binImage(cv2.resize(cam_img, size_upsample))
         heatmap_maxconn = selectMaxConnect(heatmap_bin)
@@ -214,7 +215,7 @@ def get_crop_image(ori_image_path, feature_conv):
         #print(heatmap_mask)
         
         ind = np.argwhere(heatmap_mask != 0)
-        if j==0:
+        if i==0:
             all_idx = ind
         else:
 
