@@ -198,6 +198,7 @@ def selectMaxConnect(heatmap):
 def get_crop_image(ori_image_path, feature_conv):
     image = cv2.imread(ori_image_path)
     size_upsample = (256, 256) 
+    image = cv2.resize(image, size_upsample)
     all_idx=np.array([])
     cls_number, h, w = feature_conv.shape
     for i in range(cls_number):

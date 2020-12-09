@@ -184,7 +184,7 @@ def Attention_gen_patchs(ori_image, fm_cuda):
         # ori_img = ori_image[i].permute(1,2,0)
         # print(ori_image[i].shape)
         image = ori_image[i].numpy().reshape(256,256,3)
-        image = image[int(256*0.334):int(256*0.667),int(256*0.334):int(256*0.667),:]
+        #image = image[int(256*0.334):int(256*0.667),int(256*0.334):int(256*0.667),:]
 
         image = cv2.resize(image, size_upsample)
         image_crop = image[minh:maxh,minw:maxw,:] * 256 # because image was normalized before
@@ -222,7 +222,7 @@ def train_epoch(summary, summary_dev, cfg, args, model_global,model_local, datal
                 dataloader_dev, optimizer_global,optimizer_local, summary_writer, best_dict,
                 dev_header):
     torch.set_grad_enabled(True)
-    model_global.train()
+    #model_global.train()
     model_local.train()
     device_ids = list(map(int, args.device_ids.split(',')))
     device = torch.device('cuda:{}'.format(device_ids[0]))
@@ -238,10 +238,11 @@ def train_epoch(summary, summary_dev, cfg, args, model_global,model_local, datal
         image_v, target = next(dataiter)
         image = image_v.to(device)
         target = target.to(device)
-        output_global,feat_list_global, feat_map, logit_maps = model_global(image)
+        with torch.no_grad():
+            output_global,feat_list_global, feat_map, logit_maps = model_global(image)
         #print(image_v.shape)
         patch_var = Attention_gen_patchs(image_v,logit_maps)
-        output_local,feat_list_local,_, _ = model_local(patch_var)
+        output_local,_,_, _ = model_local(patch_var)
         
 
 
@@ -412,7 +413,7 @@ def train_epoch(summary, summary_dev, cfg, args, model_global,model_local, datal
                         acc_dev_str,
                         auc_dev_str,
                        ))
-        model_global.train()
+        #model_global.train()
         model_local.train()
         
         torch.set_grad_enabled(True)
@@ -506,6 +507,7 @@ def run(args):
         summary(model_global.to(device), (3, h, w)) # showing he full model summary
     model_global = DataParallel(model_global, device_ids=device_ids).to(device).train()
     model_local = DataParallel(model_local, device_ids=device_ids).to(device).train()
+    model_global.eval()
     #model_fusion = DataParallel(model_fusion, device_ids=device_ids).to(device).train()
     if args.pre_train_gloabl is not None:
         if os.path.exists(args.pre_train_gloabl):
