@@ -62,7 +62,7 @@ class Classifier(nn.Module):
             elif BACKBONES_TYPES[self.cfg.backbone] == 'densenet':
                 setattr(
                     self,
-                    "pcam_fc_" +
+                    "fc_" +
                     str(index),
                     nn.Conv2d(
                         self.backbone.num_features *
@@ -88,7 +88,7 @@ class Classifier(nn.Module):
                     'Unknown backbone type : {}'.format(self.cfg.backbone)
                 )
 
-            classifier = getattr(self, "pcam_fc_" + str(index))
+            classifier = getattr(self, "fc_" + str(index))
             if isinstance(classifier, nn.Conv2d):
                 classifier.weight.data.normal_(0, 0.01) #mean and std_deviation
                                                         # but if we change the FC how will it change correspondingly
@@ -102,7 +102,7 @@ class Classifier(nn.Module):
             elif BACKBONES_TYPES[self.cfg.backbone] == 'densenet':
                 setattr(
                     self,
-                    "pcam_bn_" +
+                    "bn_" +
                     str(index),
                     nn.BatchNorm2d(
                         self.backbone.num_features *
@@ -150,7 +150,7 @@ class Classifier(nn.Module):
         for index, num_class in enumerate(self.cfg.num_classes):
              # this seems problematic
 
-            classifier = getattr(self, "pcam_fc_" + str(index))
+            classifier = getattr(self, "fc_" + str(index))
             #attention_weight = classifier.weight.data
             #attention_weight = classifier.weight.data.normal_(0, 0.01)
 
@@ -168,7 +168,7 @@ class Classifier(nn.Module):
             feat = self.global_pool(feat_map, logit_map)
 
             if self.cfg.fc_bn:
-                bn = getattr(self, "pcam_bn_" + str(index))
+                bn = getattr(self, "bn_" + str(index))
                 feat = bn(feat)
             feat = F.dropout(feat, p=self.cfg.fc_drop, training=self.training)
             # (N, num_class, 1, 1)
