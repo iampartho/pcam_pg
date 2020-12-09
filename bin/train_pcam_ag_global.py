@@ -389,7 +389,7 @@ def train_epoch(summary, summary_dev, cfg, args, model_global,model_local, datal
                      'auc_dev_best': best_dict['auc_dev_best'],
                      'loss_dev_best': best_dict['loss_dev_best'],
                      'state_dict': model_local.module.state_dict()},
-                    os.path.join(args.save_path, 'best_local{}.ckpt'.format(
+                    os.path.join("/content/drive/MyDrive/learning_chexpert", 'best_local{}.ckpt'.format(
                         best_dict['best_idx']))
                 )
                 best_dict['best_idx'] += 1
@@ -412,6 +412,7 @@ def train_epoch(summary, summary_dev, cfg, args, model_global,model_local, datal
                         loss_dev_str,
                         acc_dev_str,
                         auc_dev_str,
+                        best_dict['auc_dev_best']
                        ))
         #model_global.train()
         model_local.train()
@@ -670,7 +671,7 @@ def run(args):
                  'auc_dev_best': best_dict['auc_dev_best'],
                  'loss_dev_best': best_dict['loss_dev_best'],
                  'state_dict': model_local.module.state_dict()},
-                os.path.join(args.save_path,
+                os.path.join('/content/drive/MyDrive/learning_chexpert',
                              'best_local{}.ckpt'.format(best_dict['best_idx']))
             )
             best_dict['best_idx'] += 1
@@ -700,7 +701,7 @@ def run(args):
                     'auc_dev_best': best_dict['auc_dev_best'],
                     'loss_dev_best': best_dict['loss_dev_best'],
                     'state_dict': model_local.module.state_dict()},
-                   os.path.join(args.save_path, 'train_local.ckpt')) # saves the model after every epoch by same name , this can be used for resume training
+                   os.path.join("/content/drive/MyDrive/learning_chexpert", 'train_local.ckpt')) # saves the model after every epoch by same name , this can be used for resume training
     summary_writer.close()
 
 
