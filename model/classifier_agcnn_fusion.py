@@ -60,15 +60,17 @@ class Classifier_F(nn.Module):
                         bias=True)) # this is the 1x1 convolution refered in the paper
                                     # basically they have used 5 , 1x1 conv to comprehend each class
             # Eikhane linear layer hobe
-            #
             elif BACKBONES_TYPES[self.cfg.backbone] == 'densenet':
                 setattr(
                     self,
                     "fc_" +
                     str(index),
-                    nn.linear(
+                    nn.Conv2d(
                         2048,
                         num_class,
+                        kernel_size=1,
+                        stride=1,
+                        padding=0,
                         bias=True))
             elif BACKBONES_TYPES[self.cfg.backbone] == 'inception':
                 setattr(
@@ -149,7 +151,7 @@ class Classifier_F(nn.Module):
         logit_maps = list()
         for index, num_class in enumerate(self.cfg.num_classes):
              # this seems problematic
-            feat_map = torch.cat((x[index].squeeze(-1).squeeze(-1), y[index].squeeze(-1).squeeze(-1)), dim=1).cuda()
+            feat_map = torch.cat((x[index], y[index]), dim=1).cuda()
             classifier = getattr(self, "fc_" + str(index))
             #attention_weight = classifier.weight.data
             #attention_weight = classifier.weight.data.normal_(0, 0.01)
@@ -165,7 +167,7 @@ class Classifier_F(nn.Module):
             # # f
 
             # # (N, C, 1, 1)
-            # feat = self.global_pool(feat_map, logit_map)
+            feat_map = self.global_pool(feat_map, logit_map)
 
             if self.cfg.fc_bn:
                 bn = getattr(self, "bn_" + str(index))
