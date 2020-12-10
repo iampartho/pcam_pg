@@ -27,7 +27,7 @@ BACKBONES_TYPES = {'vgg19': 'vgg',
 class Classifier_F(nn.Module):
 
     def __init__(self, cfg):
-        super(Classifier, self).__init__()
+        super(Classifier_F, self).__init__()
         self.cfg = cfg
         self.backbone = BACKBONES[cfg.backbone](cfg)
         #trained_kernel = self.backbone.features.conv0.weight #densenet specific
@@ -59,17 +59,16 @@ class Classifier_F(nn.Module):
                         padding=0,
                         bias=True)) # this is the 1x1 convolution refered in the paper
                                     # basically they have used 5 , 1x1 conv to comprehend each class
+            # Eikhane linear layer hobe
+            #
             elif BACKBONES_TYPES[self.cfg.backbone] == 'densenet':
                 setattr(
                     self,
                     "fc_" +
                     str(index),
-                    nn.Conv2d(
+                    nn.linear(
                         2048,
                         num_class,
-                        kernel_size=1,
-                        stride=1,
-                        padding=0,
                         bias=True))
             elif BACKBONES_TYPES[self.cfg.backbone] == 'inception':
                 setattr(
@@ -140,16 +139,17 @@ class Classifier_F(nn.Module):
         #feat_map = self.backbone(x) # according to the i/p size it returns [N, 1024, H, W]
                                     # for 224x224 it returns 7x7 and for 256x256 it returns 8x8 and for 512x512 it returns 16x16
         
-        feat_map = x
+        #feat_map = x
         if self.cfg.attention_map != "None":
-            feat_map = self.attention_map(feat_map)
+            x = self.attention_map(x)
+            y = self.attention_map(y)
         # [(N, 1), (N,1),...] 
         logits = list()
         # [(N, H, W), (N, H, W),...]
         logit_maps = list()
         for index, num_class in enumerate(self.cfg.num_classes):
              # this seems problematic
-            feat_map = torch.cat((x[index], y[index]), dim=1).cuda()
+            feat_map = torch.cat((x[index].squeeze(-1).squeeze(-1), y[index].squeeze(-1).squeeze(-1)), dim=1).cuda()
             classifier = getattr(self, "fc_" + str(index))
             #attention_weight = classifier.weight.data
             #attention_weight = classifier.weight.data.normal_(0, 0.01)

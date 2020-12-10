@@ -42,7 +42,7 @@ parser.add_argument('--device_ids', default='0,1,2,3', type=str,
                     help="GPU indices ""comma separated, e.g. '0,1' ")
 parser.add_argument('--pre_train_gloabl', default="/content/pcam_pg/best1.ckpt", type=str, help="If get"
                     "parameters from pretrained model")
-parser.add_argument('--pre_train_local', default="/content/pcam_pg/best1.ckpt", type=str, help="If get"
+parser.add_argument('--pre_train_local', default="/content/drive/MyDrive/learning_chexpert/best_local1.ckpt", type=str, help="If get"
                     "parameters from pretrained model")
 parser.add_argument('--resume', default=0, type=int, help="If resume from "
                     "previous run")
@@ -218,8 +218,8 @@ def selectMaxConnect(heatmap):
     lcc = lcc + 0
     return lcc 
 
-def train_epoch(summary, summary_dev, cfg, args, model_global,model_local, dataloader,
-                dataloader_dev, optimizer_global,optimizer_local, summary_writer, best_dict,
+def train_epoch(summary, summary_dev, cfg, args, model_global,model_local,model_fusion, dataloader,
+                dataloader_dev, optimizer_global,optimizer_local,optimizer_fusion, summary_writer, best_dict,
                 dev_header):
     torch.set_grad_enabled(True)
     #model_global.train()
@@ -310,7 +310,7 @@ def train_epoch(summary, summary_dev, cfg, args, model_global,model_local, datal
         if summary['step'] % cfg.test_every == 0:
             time_now = time.time()
             summary_dev, predlist, true_list = test_epoch(
-                summary_dev, cfg, args,model_global, model_local, dataloader_dev)
+                summary_dev, cfg, args,model_global, model_local,model_fusion, dataloader_dev)
             # pred_list has the probabilities(non-binarized) of each classes in their index for all val images
             # true_list has the g_t of each classes in their index binarized
             time_spent = time.time() - time_now # apatoto eituku dekhsi
@@ -426,7 +426,7 @@ def train_epoch(summary, summary_dev, cfg, args, model_global,model_local, datal
     return summary
 
 
-def test_epoch(summary, cfg, args, model_global,model_local, dataloader):
+def test_epoch(summary, cfg, args, model_global,model_local,model_fusion, dataloader):
     torch.set_grad_enabled(False)
     model_global.eval()
     model_local.eval()
@@ -593,13 +593,13 @@ def run(args):
         #     param_group['lr'] = lr
 
         summary_train = train_epoch(
-            summary_train, summary_dev, cfg, args, model_global,model_local,
-            dataloader_train, dataloader_dev, optimizer_global,optimizer_local,
+            summary_train, summary_dev, cfg, args, model_global,model_local,model_fusion,
+            dataloader_train, dataloader_dev, optimizer_global,optimizer_local,optimizer_fusion,
             summary_writer, best_dict, dev_header)
 
         time_now = time.time()
         summary_dev, predlist, true_list = test_epoch(
-            summary_dev, cfg, args, model_global,model_local, dataloader_dev) # since it is validating after every epoch train what it is necissity of cfg.test_every ?
+            summary_dev, cfg, args, model_global,model_local,model_fusion, dataloader_dev) # since it is validating after every epoch train what it is necissity of cfg.test_every ?
         time_spent = time.time() - time_now
 
         auclist = []
