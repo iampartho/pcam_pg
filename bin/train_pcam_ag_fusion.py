@@ -27,7 +27,7 @@ from model.classifier_agcnn1 import Classifier  # noqa
 from utils.misc import lr_schedule  # noqa
 from model.utils import get_optimizer  # noqa
 #from model.classifier_agcnn import *
-#from model.classifier_agcnn_fusion import *
+from model.classifier_agcnn_fusion import *
 import torchvision.transforms as transforms
 from model.utils import tensor2numpy
 
@@ -223,7 +223,7 @@ def train_epoch(summary, summary_dev, cfg, args, model_global,model_local, datal
                 dev_header):
     torch.set_grad_enabled(True)
     #model_global.train()
-    model_local.train()
+    #model_local.train()
     device_ids = list(map(int, args.device_ids.split(',')))
     device = torch.device('cuda:{}'.format(device_ids[0]))
     steps = len(dataloader)
@@ -241,8 +241,10 @@ def train_epoch(summary, summary_dev, cfg, args, model_global,model_local, datal
         with torch.no_grad():
             output_global,feat_list_global, feat_map, logit_maps = model_global(image)
         #print(image_v.shape)
-        patch_var = Attention_gen_patchs(image_v,logit_maps)
-        output_local,_,_, _ = model_local(patch_var)
+            patch_var = Attention_gen_patchs(image_v,logit_maps)
+            output_local,feat_list_local,_, _ = model_local(patch_var)
+
+        output = model_fusion(feat_list_global, feat_list_local)
         
 
 
@@ -253,21 +255,21 @@ def train_epoch(summary, summary_dev, cfg, args, model_global,model_local, datal
 
         
         for t in range(num_tasks):
-            loss_t, acc_t = get_loss(output_local, target, t, device, cfg) # loss_t and acc_t is for class 't'
-            loss_local += loss_t
+            loss_t, acc_t = get_loss(output, target, t, device, cfg) # loss_t and acc_t is for class 't'
+            loss_fusion += loss_t
             loss_sum[t] += loss_t.item()
             acc_sum[t] += acc_t.item()
 
         
 
 
-        loss =loss_local
-        optimizer_local.zero_grad()
+        loss =loss_fusion
+        optimizer_fusion.zero_grad()
         
 
         loss.backward()
 
-        optimizer_local.step()
+        optimizer_fusion.step()
         
 
         summary['step'] += 1
@@ -389,7 +391,7 @@ def train_epoch(summary, summary_dev, cfg, args, model_global,model_local, datal
                      'auc_dev_best': best_dict['auc_dev_best'],
                      'loss_dev_best': best_dict['loss_dev_best'],
                      'state_dict': model_local.module.state_dict()},
-                    os.path.join("/content/drive/MyDrive/learning_chexpert", 'best_local{}.ckpt'.format(
+                    os.path.join("/content/drive/MyDrive/learning_chexpert", 'best_fusion{}.ckpt'.format(
                         best_dict['best_idx']))
                 )
                 best_dict['best_idx'] += 1
@@ -415,7 +417,8 @@ def train_epoch(summary, summary_dev, cfg, args, model_global,model_local, datal
                         best_dict['auc_dev_best']
                        ))
         #model_global.train()
-        model_local.train()
+        #model_local.train()
+        model_fusion.train()
         
         torch.set_grad_enabled(True)
     summary['epoch'] += 1
@@ -427,6 +430,7 @@ def test_epoch(summary, cfg, args, model_global,model_local, dataloader):
     torch.set_grad_enabled(False)
     model_global.eval()
     model_local.eval()
+    model_fusion.eval()
     device_ids = list(map(int, args.device_ids.split(',')))
     device = torch.device('cuda:{}'.format(device_ids[0]))
     steps = len(dataloader)
@@ -442,18 +446,21 @@ def test_epoch(summary, cfg, args, model_global,model_local, dataloader):
         image_v, target = next(dataiter)
         image = image_v.to(device)
         target = target.to(device)
-        output_global,feat_list_global, feat_map, logit_maps = model_global(image)
-        #print(image_v.shape)
-        patch_var = Attention_gen_patchs(image_v,logit_maps)
-        output_local,feat_list_local,_,_ = model_local(patch_var)
+        with torch.no_grad():
+            output_global,feat_list_global, feat_map, logit_maps = model_global(image)
+            #print(image_v.shape)
+            patch_var = Attention_gen_patchs(image_v,logit_maps)
+            output_local,feat_list_local,_,_ = model_local(patch_var)
         
+            output = model_fusion(feat_list_global, feat_list_local)
+
         # different number of tasks
         for t in range(len(cfg.num_classes)):
 
-            loss_t, acc_t = get_loss(output_local, target, t, device, cfg)
+            loss_t, acc_t = get_loss(output, target, t, device, cfg)
             # AUC
             output_tensor = torch.sigmoid(
-                output_local[t].view(-1)).cpu().detach().numpy()
+                output[t].view(-1)).cpu().detach().numpy()
             target_tensor = target[:, t].view(-1).cpu().detach().numpy()
             if step == 0:
                 predlist[t] = output_tensor
@@ -498,7 +505,7 @@ def run(args):
 
     model_global = Classifier(cfg)
     model_local = Classifier(cfg)
-    #model_fusion = Classifier_F(cfg) # model is done
+    model_fusion = Classifier_F(cfg) # model is done
     if args.verbose is True:
         from torchsummary import summary
         if cfg.fix_ratio:
@@ -508,8 +515,9 @@ def run(args):
         summary(model_global.to(device), (3, h, w)) # showing he full model summary
     model_global = DataParallel(model_global, device_ids=device_ids).to(device).train()
     model_local = DataParallel(model_local, device_ids=device_ids).to(device).train()
+    model_fusion = DataParallel(model_fusion, device_ids=device_ids).to(device).train()
     model_global.eval()
-    #model_fusion = DataParallel(model_fusion, device_ids=device_ids).to(device).train()
+    model_local.eval()
     if args.pre_train_gloabl is not None:
         if os.path.exists(args.pre_train_gloabl):
             ckpt = torch.load(args.pre_train_gloabl, map_location=device)
@@ -524,7 +532,7 @@ def run(args):
 
     optimizer_global = get_optimizer(model_global.parameters(), cfg)
     optimizer_local = get_optimizer(model_local.parameters(), cfg)
-    #optimizer_fusion = get_optimizer(model_fusion.parameters(), cfg)
+    optimizer_fusion = get_optimizer(model_fusion.parameters(), cfg)
 
 
     # ei 10 line Ana bujhabe
@@ -672,7 +680,7 @@ def run(args):
                  'loss_dev_best': best_dict['loss_dev_best'],
                  'state_dict': model_local.module.state_dict()},
                 os.path.join('/content/drive/MyDrive/learning_chexpert',
-                             'best_local{}.ckpt'.format(best_dict['best_idx']))
+                             'best_fusion{}.ckpt'.format(best_dict['best_idx']))
             )
             best_dict['best_idx'] += 1
             if best_dict['best_idx'] > cfg.save_top_k:
@@ -701,7 +709,7 @@ def run(args):
                     'auc_dev_best': best_dict['auc_dev_best'],
                     'loss_dev_best': best_dict['loss_dev_best'],
                     'state_dict': model_local.module.state_dict()},
-                   os.path.join("/content/drive/MyDrive/learning_chexpert", 'train_local.ckpt')) # saves the model after every epoch by same name , this can be used for resume training
+                   os.path.join("/content/drive/MyDrive/learning_chexpert", 'train_fusion.ckpt')) # saves the model after every epoch by same name , this can be used for resume training
     summary_writer.close()
 
 

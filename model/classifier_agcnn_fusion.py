@@ -24,7 +24,7 @@ BACKBONES_TYPES = {'vgg19': 'vgg',
                    'inception_v3': 'inception'}
 
 
-class Classifier(nn.Module):
+class Classifier_F(nn.Module):
 
     def __init__(self, cfg):
         super(Classifier, self).__init__()
@@ -167,11 +167,11 @@ class Classifier(nn.Module):
             # # (N, C, 1, 1)
             # feat = self.global_pool(feat_map, logit_map)
 
-            # if self.cfg.fc_bn:
-            #     bn = getattr(self, "bn_" + str(index))
-            #     feat = bn(feat)
-            # feat = F.dropout(feat, p=self.cfg.fc_drop, training=self.training)
-            # # (N, num_class, 1, 1)
+            if self.cfg.fc_bn:
+                bn = getattr(self, "bn_" + str(index))
+                feat_map = bn(feat_map)
+            feat_map = F.dropout(feat_map, p=self.cfg.fc_drop, training=self.training)
+            # (N, num_class, 1, 1)
 
             logit = classifier(feat_map)
             # (N, num_class)
