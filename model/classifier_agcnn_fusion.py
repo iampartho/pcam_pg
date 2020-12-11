@@ -148,34 +148,35 @@ class Classifier_F(nn.Module):
         # [(N, 1), (N,1),...] 
         logits = list()
         # [(N, H, W), (N, H, W),...]
+        feat_map = torch.cat((x, y), dim=1).cuda()
         logit_maps = list()
         for index, num_class in enumerate(self.cfg.num_classes):
              # this seems problematic
-            feat_map = torch.cat((x[index], y[index]), dim=1).cuda()
+            
             classifier = getattr(self, "fc_" + str(index))
             #attention_weight = classifier.weight.data
             #attention_weight = classifier.weight.data.normal_(0, 0.01)
 
             #attentioned_feat_map = torch.mul(feat_map, attention_weight)
             # (N, 1, H, W)
-            # logit_map = None
-            # if not (self.cfg.global_pool == 'AVG_MAX' or
-            #         self.cfg.global_pool == 'AVG_MAX_LSE'):
-            #     logit_map = classifier(feat_map)
-            #     logit_maps.append(logit_map.squeeze())
+            logit_map = None
+            if not (self.cfg.global_pool == 'AVG_MAX' or
+                    self.cfg.global_pool == 'AVG_MAX_LSE'):
+                logit_map = classifier(feat_map)
+                logit_maps.append(logit_map.squeeze())
 
             # # f
 
             # # (N, C, 1, 1)
-            feat_map = self.global_pool(feat_map, logit_map)
+            feat = self.global_pool(feat_map, logit_map)
 
             if self.cfg.fc_bn:
                 bn = getattr(self, "bn_" + str(index))
-                feat_map = bn(feat_map)
-            feat_map = F.dropout(feat_map, p=self.cfg.fc_drop, training=self.training)
+                feat = bn(feat)
+            feat = F.dropout(feat, p=self.cfg.fc_drop, training=self.training)
             # (N, num_class, 1, 1)
 
-            logit = classifier(feat_map)
+            logit = classifier(feat)
             # (N, num_class)
             logit = logit.squeeze(-1).squeeze(-1)
             logits.append(logit)
