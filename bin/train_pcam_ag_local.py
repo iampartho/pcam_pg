@@ -23,7 +23,8 @@ torch.manual_seed(0)
 torch.cuda.manual_seed_all(0)
 
 from data.dataset import ImageDataset  # noqa
-from model.classifier_agcnn1 import Classifier  # noqa
+from model.classifier_agcnn1 import Classifier
+from model.classifier_agcnn_local import Classifier_local  # noqa
 from utils.misc import lr_schedule  # noqa
 from model.utils import get_optimizer  # noqa
 #from model.classifier_agcnn import *
@@ -141,11 +142,15 @@ def Attention_gen_patchs(ori_image, fm_cuda):
     size_upsample = (256, 256) 
     num_cls, bz, h, w = feature_conv.shape
 
-    patchs_cuda = torch.FloatTensor().cuda()
+    #patchs_cuda = torch.FloatTensor().cuda()
 
-    for i in range(0, bz):
-        all_idx=np.array([])
-        for j in range(num_cls):
+    all_patches = []
+
+    
+        #all_idx=np.array([])
+    for j in range(num_cls):
+        patchs_cuda = torch.FloatTensor().cuda()
+        for i in range(0, bz):
             feature = feature_conv[j, i, :, :]
             # cam = feature.reshape((nc, h*w))
             # cam = cam.sum(axis=0)
@@ -160,41 +165,43 @@ def Attention_gen_patchs(ori_image, fm_cuda):
             #print(heatmap_mask)
             
             ind = np.argwhere(heatmap_mask != 0)
-            if j==0:
-                all_idx = ind
-            else:
+            # if j==0:
+            #     all_idx = ind
+            # else:
 
-                np.concatenate((all_idx, ind), axis=0)
+            #     np.concatenate((all_idx, ind), axis=0)
                 #all_idx += ind
 
-        if len(all_idx)==0 :
-          minh = 0
-          minw = 0
-          maxh = size_upsample[0]
-          maxw = size_upsample[1]
-        else :
-          minh = min(all_idx[:,0])
-          minw = min(all_idx[:,1])
-          maxh = max(all_idx[:,0])
-          maxw = max(all_idx[:,1])
-        
-        # to ori image 
-        #print('xxxxxxxxxxxxxxxx')
-        # print(ori_image[i].shape)
-        # ori_img = ori_image[i].permute(1,2,0)
-        # print(ori_image[i].shape)
-        image = ori_image[i].numpy().reshape(256,256,3)
-        #image = image[int(256*0.334):int(256*0.667),int(256*0.334):int(256*0.667),:]
+            if len(ind)==0 :
+              minh = 0
+              minw = 0
+              maxh = size_upsample[0]
+              maxw = size_upsample[1]
+            else :
+              minh = min(ind[:,0])
+              minw = min(ind[:,1])
+              maxh = max(ind[:,0])
+              maxw = max(ind[:,1])
+            
+            # to ori image 
+            #print('xxxxxxxxxxxxxxxx')
+            # print(ori_image[i].shape)
+            # ori_img = ori_image[i].permute(1,2,0)
+            # print(ori_image[i].shape)
+            image = ori_image[i].numpy().reshape(256,256,3)
+            #image = image[int(256*0.334):int(256*0.667),int(256*0.334):int(256*0.667),:]
 
-        image = cv2.resize(image, size_upsample)
-        image_crop = image[minh:maxh,minw:maxw,:] * 256 # because image was normalized before
-        image_crop = preprocess(Image.fromarray(image_crop.astype('uint8')).convert('RGB')) 
+            image = cv2.resize(image, size_upsample)
+            image_crop = image[minh:maxh,minw:maxw,:] * 256 # because image was normalized before
+            image_crop = preprocess(Image.fromarray(image_crop.astype('uint8')).convert('RGB')) 
 
-        img_variable = torch.autograd.Variable(image_crop.reshape(3,256,256).unsqueeze(0).cuda())
+            img_variable = torch.autograd.Variable(image_crop.reshape(3,256,256).unsqueeze(0).cuda())
 
-        patchs_cuda = torch.cat((patchs_cuda,img_variable),0)
+            patchs_cuda = torch.cat((patchs_cuda,img_variable),0)
 
-    return patchs_cuda
+        all_patches.append(patchs_cuda)
+    #return patchs_cuda
+    return all_patches
     
 
 def binImage(heatmap):
@@ -497,7 +504,7 @@ def run(args):
     device = torch.device('cuda:{}'.format(device_ids[0]))
 
     model_global = Classifier(cfg)
-    model_local = Classifier(cfg)
+    model_local = Classifier_local(cfg)
     #model_fusion = Classifier_F(cfg) # model is done
     if args.verbose is True:
         from torchsummary import summary

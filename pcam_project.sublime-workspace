@@ -523,7 +523,7 @@
 			"file": "model/classifier_agcnn_fusion.py",
 			"settings":
 			{
-				"buffer_size": 7327,
+				"buffer_size": 7298,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -532,7 +532,7 @@
 			"file": "bin/train_pcam_ag_fusion.py",
 			"settings":
 			{
-				"buffer_size": 29909,
+				"buffer_size": 29897,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -811,7 +811,7 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 7327,
+						"buffer_size": 7298,
 						"regions":
 						{
 						},
@@ -841,7 +841,7 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 29909,
+						"buffer_size": 29897,
 						"regions":
 						{
 						},
