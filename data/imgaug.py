@@ -32,7 +32,7 @@ def Aug(image):
     #         img = tvf.adjust_gamma(img, uniform(0.5, 3))
     # factor = 2 ** uniform(-1, 1)
     # image = tvf.adjust_contrast(image, factor) # 0.5 ~ 2
-    #image = tvf.adjust_brightness(image, uniform(0.3,1.5))
+    image = tvf.adjust_brightness(image, uniform(0.3,1.5))
     img_aug = tfs.Compose([
         tfs.RandomAffine(degrees=(-15, 15), translate=(0.05, 0.05),
                          scale=(0.95, 1.05), fillcolor=128),

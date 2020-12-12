@@ -27,7 +27,7 @@ BACKBONES_TYPES = {'vgg19': 'vgg',
 class Classifier_local(nn.Module):
 
     def __init__(self, cfg):
-        super(Classifier, self).__init__()
+        super(Classifier_local, self).__init__()
         self.cfg = cfg
         self.backbone = BACKBONES[cfg.backbone](cfg)
         #trained_kernel = self.backbone.features.conv0.weight #densenet specific

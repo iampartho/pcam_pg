@@ -570,15 +570,16 @@ def run(args):
         "fused_dev_best": 0.0,
         "best_idx": 1}
     '''Needs to be moidified'''
-    # if args.resume:
-    #     ckpt_path_local = os.path.join(args.save_path, 'train.ckpt')
-    #     ckpt = torch.load(ckpt_path, map_location=device)
-    #     model_local.module.load_state_dict(ckpt['state_dict'])
-    #     summary_train = {'epoch': ckpt['epoch'], 'step': ckpt['step']}
-    #     best_dict['acc_dev_best'] = ckpt['acc_dev_best']
-    #     best_dict['loss_dev_best'] = ckpt['loss_dev_best']
-    #     best_dict['auc_dev_best'] = ckpt['auc_dev_best']
-    #     epoch_start = ckpt['epoch']
+    if args.resume:
+        #ckpt_path_local = os.path.join(args.save_path, 'train.ckpt')
+        ckpt_path = '/content/drive/MyDrive/learning_chexpert/best_local1.ckpt'
+        ckpt = torch.load(ckpt_path, map_location=device)
+        model_local.module.load_state_dict(ckpt['state_dict'])
+        summary_train = {'epoch': ckpt['epoch'], 'step': ckpt['step']}
+        best_dict['acc_dev_best'] = ckpt['acc_dev_best']
+        best_dict['loss_dev_best'] = ckpt['loss_dev_best']
+        best_dict['auc_dev_best'] = ckpt['auc_dev_best']
+        epoch_start = ckpt['epoch']
 
     for epoch in range(epoch_start, cfg.epoch):
         lr = lr_schedule(cfg.lr, cfg.lr_factor, summary_train['epoch'],
