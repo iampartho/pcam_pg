@@ -41,6 +41,7 @@ class Classifier_F(nn.Module):
             self.expand = 2
         elif cfg.global_pool == 'AVG_MAX_LSE':
             self.expand = 3 #the expand variable depends upon number of pulling used in the code
+        self.normalizing = nn.BatchNorm2d(self.backbone.num_features * self.expand)
         self._init_classifier()
         self._init_bn() #initializing the batch-normalization
         self._init_attention_map()
@@ -66,7 +67,8 @@ class Classifier_F(nn.Module):
                     "fc_" +
                     str(index),
                     nn.Conv2d(
-                        2048,
+                        self.backbone.num_features *
+                        self.expand,
                         num_class,
                         kernel_size=1,
                         stride=1,
@@ -148,7 +150,9 @@ class Classifier_F(nn.Module):
         # [(N, 1), (N,1),...] 
         logits = list()
         # [(N, H, W), (N, H, W),...]
-        feat_map = torch.cat((x, y), dim=1).cuda()
+        x = self.normalizing(x)
+        y = self.normalizing(y)
+        feat_map = x + y
         logit_maps = list()
         for index, num_class in enumerate(self.cfg.num_classes):
              # this seems problematic
