@@ -249,7 +249,7 @@ def train_epoch(summary, summary_dev, cfg, args, model_global,model_local, datal
             output_global,feat_list_global, feat_map, logit_maps = model_global(image)
         #print(image_v.shape)
         patch_var = Attention_gen_patchs(image_v,logit_maps)
-        output_local,_,_, _ = model_local(patch_var)
+        output_local,_,_, _ = model_local(patch_var, feat_map)
         
 
 
@@ -452,7 +452,7 @@ def test_epoch(summary, cfg, args, model_global,model_local, dataloader):
         output_global,feat_list_global, feat_map, logit_maps = model_global(image)
         #print(image_v.shape)
         patch_var = Attention_gen_patchs(image_v,logit_maps)
-        output_local,feat_list_local,_,_ = model_local(patch_var)
+        output_local,feat_list_local,_,_ = model_local(patch_var, feat_map)
         
         # different number of tasks
         for t in range(len(cfg.num_classes)):

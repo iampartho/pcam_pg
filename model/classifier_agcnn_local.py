@@ -41,6 +41,7 @@ class Classifier_local(nn.Module):
             self.expand = 2
         elif cfg.global_pool == 'AVG_MAX_LSE':
             self.expand = 3 #the expand variable depends upon number of pulling used in the code
+        self.normalize = nn.BatchNorm2d(self.backbone.num_features * self.expand)
         self._init_classifier()
         self._init_bn() #initializing the batch-normalization
         self._init_attention_map()
@@ -135,8 +136,10 @@ class Classifier_local(nn.Module):
     def cuda(self, device=None):
         return self._apply(lambda t: t.cuda(device))
 
-    def forward(self, x):
+    def forward(self, x, y):
         
+        y=self.normalize(y)
+
         # [(N, 1), (N,1),...] 
         logits = list()
         # [(N, H, W), (N, H, W),...]
@@ -148,7 +151,8 @@ class Classifier_local(nn.Module):
             # (N, C, H, W)
             feat_map = self.backbone(x[index]) # according to the i/p size it returns [N, 1024, H, W]
                                     # for 224x224 it returns 7x7 and for 256x256 it returns 8x8 and for 512x512 it returns 16x16
-        
+            feat_map = self.normalize(feat_map)
+            feat_map = feat_map + y
             if self.cfg.attention_map != "None":
                 feat_map = self.attention_map(feat_map)
 
