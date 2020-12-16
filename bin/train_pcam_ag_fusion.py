@@ -521,13 +521,14 @@ def run(args):
     if args.pre_train_gloabl is not None:
         if os.path.exists(args.pre_train_gloabl):
             ckpt = torch.load(args.pre_train_gloabl, map_location=device)
-            model_global.module.load_state_dict(ckpt, strict=False)
-            model_fusion.module.load_state_dict(ckpt, strict=False)
+            model_global.module.load_state_dict(ckpt)
+            #model_fusion.module.load_state_dict(ckpt, strict=False)
+
     if args.pre_train_local is not None:
         if os.path.exists(args.pre_train_gloabl):
 
             ckpt = torch.load(args.pre_train_local, map_location=device)
-            model_local.module.load_state_dict(ckpt, strict=False)
+            model_local.module.load_state_dict(ckpt)
             print('pretrained local  loaded')
 
     optimizer_global = get_optimizer(model_global.parameters(), cfg)
