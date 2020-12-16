@@ -42,7 +42,7 @@ parser.add_argument('--device_ids', default='0,1,2,3', type=str,
                     help="GPU indices ""comma separated, e.g. '0,1' ")
 parser.add_argument('--pre_train_gloabl', default="/content/pcam_pg/best1.ckpt", type=str, help="If get"
                     "parameters from pretrained model")
-parser.add_argument('--pre_train_local', default="/content/drive/MyDrive/learning_chexpert/best_local1.ckpt", type=str, help="If get"
+parser.add_argument('--pre_train_local', default="/content/drive/MyDrive/learning_chexpert/best_local1_prev.ckpt", type=str, help="If get"
                     "parameters from pretrained model")
 parser.add_argument('--resume', default=0, type=int, help="If resume from "
                     "previous run")
@@ -521,14 +521,14 @@ def run(args):
     if args.pre_train_gloabl is not None:
         if os.path.exists(args.pre_train_gloabl):
             ckpt = torch.load(args.pre_train_gloabl, map_location=device)
-            model_global.module.load_state_dict(ckpt)
+            model_global.module.load_state_dict(ckpt['state_dict'])
             #model_fusion.module.load_state_dict(ckpt, strict=False)
 
     if args.pre_train_local is not None:
         if os.path.exists(args.pre_train_gloabl):
 
             ckpt = torch.load(args.pre_train_local, map_location=device)
-            model_local.module.load_state_dict(ckpt)
+            model_local.module.load_state_dict(ckpt['state_dict'])
             print('pretrained local  loaded')
 
     optimizer_global = get_optimizer(model_global.parameters(), cfg)
@@ -572,15 +572,15 @@ def run(args):
         "fused_dev_best": 0.0,
         "best_idx": 1}
     '''Needs to be moidified'''
-    # if args.resume:
-    #     ckpt_path_local = os.path.join(args.save_path, 'train.ckpt')
-    #     ckpt = torch.load(ckpt_path, map_location=device)
-    #     model_local.module.load_state_dict(ckpt['state_dict'])
-    #     summary_train = {'epoch': ckpt['epoch'], 'step': ckpt['step']}
-    #     best_dict['acc_dev_best'] = ckpt['acc_dev_best']
-    #     best_dict['loss_dev_best'] = ckpt['loss_dev_best']
-    #     best_dict['auc_dev_best'] = ckpt['auc_dev_best']
-    #     epoch_start = ckpt['epoch']
+    if args.resume:
+        ckpt_path_local = os.path.join(args.save_path, 'train.ckpt')
+        ckpt = torch.load(ckpt_path, map_location=device)
+        model_local.module.load_state_dict(ckpt['state_dict'])
+        summary_train = {'epoch': ckpt['epoch'], 'step': ckpt['step']}
+        best_dict['acc_dev_best'] = ckpt['acc_dev_best']
+        best_dict['loss_dev_best'] = ckpt['loss_dev_best']
+        best_dict['auc_dev_best'] = ckpt['auc_dev_best']
+        epoch_start = ckpt['epoch']
 
     for epoch in range(epoch_start, cfg.epoch):
         lr = lr_schedule(cfg.lr, cfg.lr_factor, summary_train['epoch'],
