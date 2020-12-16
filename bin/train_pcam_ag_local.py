@@ -43,7 +43,7 @@ parser.add_argument('--device_ids', default='0,1,2,3', type=str,
                     help="GPU indices ""comma separated, e.g. '0,1' ")
 parser.add_argument('--pre_train_gloabl', default="/content/pcam_pg/best1.ckpt", type=str, help="If get"
                     "parameters from pretrained model")
-parser.add_argument('--pre_train_local', default="/content/drive/MyDrive/learning_chexpert/best_local1.ckpt", type=str, help="If get"
+parser.add_argument('--pre_train_local', default="/content/drive/MyDrive/learning_chexpert/best_local1_prev.ckpt", type=str, help="If get"
                     "parameters from pretrained model")
 parser.add_argument('--resume', default=0, type=int, help="If resume from "
                     "previous run")
@@ -142,15 +142,15 @@ def Attention_gen_patchs(ori_image, fm_cuda):
     size_upsample = (256, 256) 
     num_cls, bz, h, w = feature_conv.shape
 
-    #patchs_cuda = torch.FloatTensor().cuda()
+    patchs_cuda = torch.FloatTensor().cuda()
 
-    all_patches = []
+    #all_patches = []
 
-    
-        #all_idx=np.array([])
-    for j in range(num_cls):
-        patchs_cuda = torch.FloatTensor().cuda()
-        for i in range(0, bz):
+    for i in range(0, bz):
+        all_idx=np.array([])
+        for j in range(num_cls):
+        #patchs_cuda = torch.FloatTensor().cuda()
+        
             feature = feature_conv[j, i, :, :]
             # cam = feature.reshape((nc, h*w))
             # cam = cam.sum(axis=0)
@@ -165,43 +165,43 @@ def Attention_gen_patchs(ori_image, fm_cuda):
             #print(heatmap_mask)
             
             ind = np.argwhere(heatmap_mask != 0)
-            # if j==0:
-            #     all_idx = ind
-            # else:
+            if j==0:
+                all_idx = ind
+            else:
 
-            #     np.concatenate((all_idx, ind), axis=0)
-                #all_idx += ind
+                np.concatenate((all_idx, ind), axis=0)
+                all_idx += ind
 
-            if len(ind)==0 :
-              minh = 0
-              minw = 0
-              maxh = size_upsample[0]
-              maxw = size_upsample[1]
-            else :
-              minh = min(ind[:,0])
-              minw = min(ind[:,1])
-              maxh = max(ind[:,0])
-              maxw = max(ind[:,1])
-            
-            # to ori image 
-            #print('xxxxxxxxxxxxxxxx')
-            # print(ori_image[i].shape)
-            # ori_img = ori_image[i].permute(1,2,0)
-            # print(ori_image[i].shape)
-            image = ori_image[i].numpy().reshape(256,256,3)
-            #image = image[int(256*0.334):int(256*0.667),int(256*0.334):int(256*0.667),:]
+        if len(all_idx)==0 :
+          minh = 0
+          minw = 0
+          maxh = size_upsample[0]
+          maxw = size_upsample[1]
+        else :
+          minh = min(all_idx[:,0])
+          minw = min(all_idx[:,1])
+          maxh = max(all_idx[:,0])
+          maxw = max(all_idx[:,1])
+        
+        # to ori image 
+        #print('xxxxxxxxxxxxxxxx')
+        # print(ori_image[i].shape)
+        # ori_img = ori_image[i].permute(1,2,0)
+        # print(ori_image[i].shape)
+        image = ori_image[i].numpy().reshape(256,256,3)
+        #image = image[int(256*0.334):int(256*0.667),int(256*0.334):int(256*0.667),:]
 
-            image = cv2.resize(image, size_upsample)
-            image_crop = image[minh:maxh,minw:maxw,:] * 256 # because image was normalized before
-            image_crop = preprocess(Image.fromarray(image_crop.astype('uint8')).convert('RGB')) 
+        image = cv2.resize(image, size_upsample)
+        image_crop = image[minh:maxh,minw:maxw,:] * 256 # because image was normalized before
+        image_crop = preprocess(Image.fromarray(image_crop.astype('uint8')).convert('RGB')) 
 
-            img_variable = torch.autograd.Variable(image_crop.reshape(3,256,256).unsqueeze(0).cuda())
+        img_variable = torch.autograd.Variable(image_crop.reshape(3,256,256).unsqueeze(0).cuda())
 
-            patchs_cuda = torch.cat((patchs_cuda,img_variable),0)
+        patchs_cuda = torch.cat((patchs_cuda,img_variable),0)
 
-        all_patches.append(patchs_cuda)
-    #return patchs_cuda
-    return all_patches
+        #all_patches.append(patchs_cuda)
+    return patchs_cuda
+    #return all_patches
     
 
 def binImage(heatmap):
@@ -396,7 +396,7 @@ def train_epoch(summary, summary_dev, cfg, args, model_global,model_local, datal
                      'auc_dev_best': best_dict['auc_dev_best'],
                      'loss_dev_best': best_dict['loss_dev_best'],
                      'state_dict': model_local.module.state_dict()},
-                    os.path.join("/content/drive/MyDrive/learning_chexpert", 'best_local{}.ckpt'.format(
+                    os.path.join("/content/drive/MyDrive/learning_chexpert", 'best_local_prev_new{}.ckpt'.format(
                         best_dict['best_idx']))
                 )
                 best_dict['best_idx'] += 1
@@ -504,7 +504,7 @@ def run(args):
     device = torch.device('cuda:{}'.format(device_ids[0]))
 
     model_global = Classifier(cfg)
-    model_local = Classifier_local(cfg)
+    model_local = Classifier(cfg)
     #model_fusion = Classifier_F(cfg) # model is done
     if args.verbose is True:
         from torchsummary import summary
@@ -680,7 +680,7 @@ def run(args):
                  'loss_dev_best': best_dict['loss_dev_best'],
                  'state_dict': model_local.module.state_dict()},
                 os.path.join('/content/drive/MyDrive/learning_chexpert',
-                             'best_local{}.ckpt'.format(best_dict['best_idx']))
+                             'best_local_prev_new{}.ckpt'.format(best_dict['best_idx']))
             )
             best_dict['best_idx'] += 1
             if best_dict['best_idx'] > cfg.save_top_k:
@@ -709,7 +709,7 @@ def run(args):
                     'auc_dev_best': best_dict['auc_dev_best'],
                     'loss_dev_best': best_dict['loss_dev_best'],
                     'state_dict': model_local.module.state_dict()},
-                   os.path.join("/content/drive/MyDrive/learning_chexpert", 'train_local.ckpt')) # saves the model after every epoch by same name , this can be used for resume training
+                   os.path.join("/content/drive/MyDrive/learning_chexpert", 'best_local_prev_new.ckpt')) # saves the model after every epoch by same name , this can be used for resume training
     summary_writer.close()
 
 
