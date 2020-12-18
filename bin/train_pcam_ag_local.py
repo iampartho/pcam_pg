@@ -43,7 +43,7 @@ parser.add_argument('--device_ids', default='0,1,2,3', type=str,
                     help="GPU indices ""comma separated, e.g. '0,1' ")
 parser.add_argument('--pre_train_gloabl', default="/content/pcam_pg/best1.ckpt", type=str, help="If get"
                     "parameters from pretrained model")
-parser.add_argument('--pre_train_local', default="/content/drive/MyDrive/learning_chexpert/best_local1_prev.ckpt", type=str, help="If get"
+parser.add_argument('--pre_train_local', default="/content/drive/MyDrive/learning_chexpert/best_local11.ckpt", type=str, help="If get"
                     "parameters from pretrained model")
 parser.add_argument('--resume', default=0, type=int, help="If resume from "
                     "previous run")
@@ -144,12 +144,12 @@ def Attention_gen_patchs(ori_image, fm_cuda):
 
     patchs_cuda = torch.FloatTensor().cuda()
 
-    #all_patches = []
-
-    for i in range(0, bz):
-        all_idx=np.array([])
-        for j in range(num_cls):
-        #patchs_cuda = torch.FloatTensor().cuda()
+    all_patches = []
+    for j in range(num_cls):
+        #all_idx=np.array([])
+        patchs_cuda = torch.FloatTensor().cuda()
+        for i in range(0, bz):
+        #
         
             feature = feature_conv[j, i, :, :]
             # cam = feature.reshape((nc, h*w))
@@ -165,41 +165,41 @@ def Attention_gen_patchs(ori_image, fm_cuda):
             #print(heatmap_mask)
             
             ind = np.argwhere(heatmap_mask != 0)
-            if j==0:
-                all_idx = ind
-            else:
+            # if j==0:
+            #     all_idx = ind
+            # else:
 
-                np.concatenate((all_idx, ind), axis=0)
-                all_idx += ind
+            #     all_idx = np.concatenate((all_idx, ind), axis=0)
+                #all_idx += ind
 
-        if len(all_idx)==0 :
-          minh = 0
-          minw = 0
-          maxh = size_upsample[0]
-          maxw = size_upsample[1]
-        else :
-          minh = min(all_idx[:,0])
-          minw = min(all_idx[:,1])
-          maxh = max(all_idx[:,0])
-          maxw = max(all_idx[:,1])
+            if len(idx)==0 :
+              minh = 0
+              minw = 0
+              maxh = size_upsample[0]
+              maxw = size_upsample[1]
+            else :
+              minh = min(all_idx[:,0])
+              minw = min(all_idx[:,1])
+              maxh = max(all_idx[:,0])
+              maxw = max(all_idx[:,1])
         
-        # to ori image 
-        #print('xxxxxxxxxxxxxxxx')
-        # print(ori_image[i].shape)
-        # ori_img = ori_image[i].permute(1,2,0)
-        # print(ori_image[i].shape)
-        image = ori_image[i].numpy().reshape(256,256,3)
-        #image = image[int(256*0.334):int(256*0.667),int(256*0.334):int(256*0.667),:]
+            # to ori image 
+            #print('xxxxxxxxxxxxxxxx')
+            # print(ori_image[i].shape)
+            # ori_img = ori_image[i].permute(1,2,0)
+            # print(ori_image[i].shape)
+            image = ori_image[i].numpy().reshape(256,256,3)
+            #image = image[int(256*0.334):int(256*0.667),int(256*0.334):int(256*0.667),:]
 
-        image = cv2.resize(image, size_upsample)
-        image_crop = image[minh:maxh,minw:maxw,:] * 256 # because image was normalized before
-        image_crop = preprocess(Image.fromarray(image_crop.astype('uint8')).convert('RGB')) 
+            image = cv2.resize(image, size_upsample)
+            image_crop = image[minh:maxh,minw:maxw,:] * 256 # because image was normalized before
+            image_crop = preprocess(Image.fromarray(image_crop.astype('uint8')).convert('RGB')) 
 
-        img_variable = torch.autograd.Variable(image_crop.reshape(3,256,256).unsqueeze(0).cuda())
+            img_variable = torch.autograd.Variable(image_crop.reshape(3,256,256).unsqueeze(0).cuda())
 
-        patchs_cuda = torch.cat((patchs_cuda,img_variable),0)
+            patchs_cuda = torch.cat((patchs_cuda,img_variable),0)
 
-        #all_patches.append(patchs_cuda)
+        all_patches.append(patchs_cuda)
     return patchs_cuda
     #return all_patches
     
@@ -249,7 +249,7 @@ def train_epoch(summary, summary_dev, cfg, args, model_global,model_local, datal
             output_global,feat_list_global, feat_map, logit_maps = model_global(image)
         #print(image_v.shape)
         patch_var = Attention_gen_patchs(image_v,logit_maps)
-        output_local,_,_, _ = model_local(patch_var, feat_map)
+        output_local,_,_, _ = model_local(patch_var)
         
 
 
@@ -452,7 +452,7 @@ def test_epoch(summary, cfg, args, model_global,model_local, dataloader):
         output_global,feat_list_global, feat_map, logit_maps = model_global(image)
         #print(image_v.shape)
         patch_var = Attention_gen_patchs(image_v,logit_maps)
-        output_local,feat_list_local,_,_ = model_local(patch_var, feat_map)
+        output_local,feat_list_local,_,_ = model_local(patch_var)
         
         # different number of tasks
         for t in range(len(cfg.num_classes)):
@@ -504,7 +504,7 @@ def run(args):
     device = torch.device('cuda:{}'.format(device_ids[0]))
 
     model_global = Classifier(cfg)
-    model_local = Classifier(cfg)
+    model_local = Classifier_local(cfg)
     #model_fusion = Classifier_F(cfg) # model is done
     if args.verbose is True:
         from torchsummary import summary

@@ -532,7 +532,7 @@
 			"file": "bin/train_pcam_ag_fusion.py",
 			"settings":
 			{
-				"buffer_size": 29964,
+				"buffer_size": 29953,
 				"encoding": "UTF-8",
 				"line_ending": "Windows"
 			}
@@ -841,7 +841,7 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 29964,
+						"buffer_size": 29953,
 						"regions":
 						{
 						},
