@@ -41,7 +41,7 @@ class Classifier_F(nn.Module):
             self.expand = 2
         elif cfg.global_pool == 'AVG_MAX_LSE':
             self.expand = 3 #the expand variable depends upon number of pulling used in the code
-        #self.normalizing = nn.BatchNorm2d(self.backbone.num_features * self.expand)
+        self.normalizing = nn.BatchNorm2d(self.backbone.num_features * self.expand)
         self._init_classifier()
         self._init_bn() #initializing the batch-normalization
         self._init_attention_map()

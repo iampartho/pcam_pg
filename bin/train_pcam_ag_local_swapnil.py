@@ -42,7 +42,7 @@ parser.add_argument('--device_ids', default='0,1,2,3', type=str,
                     help="GPU indices ""comma separated, e.g. '0,1' ")
 parser.add_argument('--pre_train_gloabl', default="/content/pcam_pg/best1.ckpt", type=str, help="If get"
                     "parameters from pretrained model")
-parser.add_argument('--pre_train_local', default="/content/drive/MyDrive/learning_chexpert/best_local11.ckpt", type=str, help="If get"
+parser.add_argument('--pre_train_local', default="", type=str, help="If get"
                     "parameters from pretrained model")
 parser.add_argument('--resume', default=0, type=int, help="If resume from "
                     "previous run")
@@ -496,7 +496,7 @@ def run(args):
     device = torch.device('cuda:{}'.format(device_ids[0]))
 
     model_global = Classifier(cfg)
-    model_local = Classifier_local(cfg)
+    model_local = Classifier(cfg)
     #model_fusion = Classifier_F(cfg) # model is done
     if args.verbose is True:
         from torchsummary import summary
@@ -515,7 +515,7 @@ def run(args):
             model_global.module.load_state_dict(ckpt['state_dict'])
 
     if args.pre_train_local is not None:
-        if os.path.exists(args.pre_train_gloabl):
+        if os.path.exists(args.pre_train_local):
 
             ckpt = torch.load(args.pre_train_local, map_location=device)
             model_local.module.load_state_dict(ckpt['state_dict'])
