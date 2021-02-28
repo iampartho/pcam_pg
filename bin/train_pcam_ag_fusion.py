@@ -525,7 +525,7 @@ def run(args):
             #model_fusion.module.load_state_dict(ckpt, strict=False)
 
     if args.pre_train_local is not None:
-        if os.path.exists(args.pre_train_gloabl):
+        if os.path.exists(args.pre_train_local):
 
             ckpt = torch.load(args.pre_train_local, map_location=device)
             model_local.module.load_state_dict(ckpt['state_dict'])
