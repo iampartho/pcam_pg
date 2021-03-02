@@ -44,8 +44,8 @@ class GB2d(nn.Module):
         self.aug_train = aug_train
         
         if self.aug_train:
-            self.var_x = nn.Parameter(torch.FloatTensor(1), requires_grad = True)
-            self.var_y = nn.Parameter(torch.FloatTensor(1), requires_grad = True)
+            self.var_x = nn.Parameter(torch.FloatTensor(1), requires_grad = True).cuda()
+            self.var_y = nn.Parameter(torch.FloatTensor(1), requires_grad = True).cuda()
             self.init_parameters()
         else:
             self.var_x = torch.FloatTensor([var_x]).to('cuda')
@@ -82,14 +82,14 @@ class USM2d(nn.Module):
         self.aug_train = aug_train
         
         if self.aug_train:
-            self.alpha = nn.Parameter(torch.FloatTensor(1), requires_grad = True)
-            self.var_x = nn.Parameter(torch.FloatTensor(1), requires_grad = True)
-            self.var_y = nn.Parameter(torch.FloatTensor(1), requires_grad = True)
+            self.alpha = nn.Parameter(torch.FloatTensor(1), requires_grad = True).cuda()
+            self.var_x = nn.Parameter(torch.FloatTensor(1), requires_grad = True).cuda()
+            self.var_y = nn.Parameter(torch.FloatTensor(1), requires_grad = True).cuda()
             self.init_parameters()
         else:
-            self.alpha = torch.FloatTensor([alpha])
-            self.var_x = torch.FloatTensor([var_x])
-            self.var_y = torch.FloatTensor([var_y])
+            self.alpha = torch.FloatTensor([alpha]).cuda()
+            self.var_x = torch.FloatTensor([var_x]).cuda()
+            self.var_y = torch.FloatTensor([var_y]).cuda()
             self.GB_fcn = GB2d(in_channel, kernel_size, var_x, 
                                var_y, train = False, padding = self.padding)
     
@@ -257,10 +257,10 @@ class Classifier_local(nn.Module):
         for index, num_class in enumerate(self.cfg.num_classes):
              # this seems problematic
 
-            if index in [0, 2, 4]
-                x[index] = self.aug_layer[0]
+            if index in [0, 2, 4]:
+                x[index] = self.aug_layer[0](x[index])
             else:
-                x[index] = self.aug_layer[1]
+                x[index] = self.aug_layer[1](x[index])
             # (N, C, H, W)
             feat_map = self.backbone(x[index]) # according to the i/p size it returns [N, 1024, H, W]
                                     # for 224x224 it returns 7x7 and for 256x256 it returns 8x8 and for 512x512 it returns 16x16

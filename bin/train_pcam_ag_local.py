@@ -43,7 +43,7 @@ parser.add_argument('--device_ids', default='0,1,2', type=str,
                     help="GPU indices ""comma separated, e.g. '0,1' ")
 parser.add_argument('--pre_train_gloabl', default="/content/pcam_pg/best1.ckpt", type=str, help="If get"
                     "parameters from pretrained model")
-parser.add_argument('--pre_train_local', default="", type=str, help="If get"
+parser.add_argument('--pre_train_local', default=None, type=str, help="If get"
                     "parameters from pretrained model")
 parser.add_argument('--resume', default=0, type=int, help="If resume from "
                     "previous run")
@@ -172,16 +172,16 @@ def Attention_gen_patchs(ori_image, fm_cuda):
             #     all_idx = np.concatenate((all_idx, ind), axis=0)
                 #all_idx += ind
 
-            if len(idx)==0 :
+            if len(ind)==0 :
               minh = 0
               minw = 0
               maxh = size_upsample[0]
               maxw = size_upsample[1]
             else :
-              minh = min(all_idx[:,0])
-              minw = min(all_idx[:,1])
-              maxh = max(all_idx[:,0])
-              maxw = max(all_idx[:,1])
+              minh = min(ind[:,0])
+              minw = min(ind[:,1])
+              maxh = max(ind[:,0])
+              maxw = max(ind[:,1])
         
             # to ori image 
             #print('xxxxxxxxxxxxxxxx')
@@ -200,7 +200,7 @@ def Attention_gen_patchs(ori_image, fm_cuda):
             patchs_cuda = torch.cat((patchs_cuda,img_variable),0)
 
         all_patches.append(patchs_cuda)
-    return patchs_cuda
+    return all_patches
     #return all_patches
     
 
