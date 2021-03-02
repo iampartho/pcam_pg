@@ -390,7 +390,7 @@ def train_epoch(summary, summary_dev, cfg, args, model_global,model_local,model_
                      'acc_dev_best': best_dict['acc_dev_best'],
                      'auc_dev_best': best_dict['auc_dev_best'],
                      'loss_dev_best': best_dict['loss_dev_best'],
-                     'state_dict': model_local.module.state_dict()},
+                     'state_dict': model_fusion.module.state_dict()},
                     os.path.join("/content/drive/MyDrive/learning_chexpert", 'best_fusion{}.ckpt'.format(
                         best_dict['best_idx']))
                 )
@@ -679,7 +679,7 @@ def run(args):
                  'acc_dev_best': best_dict['acc_dev_best'],
                  'auc_dev_best': best_dict['auc_dev_best'],
                  'loss_dev_best': best_dict['loss_dev_best'],
-                 'state_dict': model_local.module.state_dict()},
+                 'state_dict': model_fusion.module.state_dict()},
                 os.path.join('/content/drive/MyDrive/learning_chexpert',
                              'best_fusion{}.ckpt'.format(best_dict['best_idx']))
             )
@@ -709,7 +709,7 @@ def run(args):
                     'acc_dev_best': best_dict['acc_dev_best'],
                     'auc_dev_best': best_dict['auc_dev_best'],
                     'loss_dev_best': best_dict['loss_dev_best'],
-                    'state_dict': model_local.module.state_dict()},
+                    'state_dict': model_fusion.module.state_dict()},
                    os.path.join("/content/drive/MyDrive/learning_chexpert", 'train_fusion.ckpt')) # saves the model after every epoch by same name , this can be used for resume training
     summary_writer.close()
 
