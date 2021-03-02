@@ -39,11 +39,11 @@ parser.add_argument('save_path', default=None, metavar='SAVE_PATH', type=str,
                     help="Path to the saved models")
 parser.add_argument('--num_workers', default=8, type=int, help="Number of "
                     "workers for each data loader")
-parser.add_argument('--device_ids', default='0,1,2,3', type=str,
+parser.add_argument('--device_ids', default='0,1,2', type=str,
                     help="GPU indices ""comma separated, e.g. '0,1' ")
 parser.add_argument('--pre_train_gloabl', default="/content/pcam_pg/best1.ckpt", type=str, help="If get"
                     "parameters from pretrained model")
-parser.add_argument('--pre_train_local', default="/content/drive/MyDrive/learning_chexpert/best_local11.ckpt", type=str, help="If get"
+parser.add_argument('--pre_train_local', default="", type=str, help="If get"
                     "parameters from pretrained model")
 parser.add_argument('--resume', default=0, type=int, help="If resume from "
                     "previous run")
@@ -189,7 +189,7 @@ def Attention_gen_patchs(ori_image, fm_cuda):
             # ori_img = ori_image[i].permute(1,2,0)
             # print(ori_image[i].shape)
             image = ori_image[i].numpy().reshape(256,256,3)
-            #image = image[int(256*0.334):int(256*0.667),int(256*0.334):int(256*0.667),:]
+            image = image[int(256*0.334):int(256*0.667),int(256*0.334):int(256*0.667),:]
 
             image = cv2.resize(image, size_upsample)
             image_crop = image[minh:maxh,minw:maxw,:] * 256 # because image was normalized before
@@ -249,7 +249,7 @@ def train_epoch(summary, summary_dev, cfg, args, model_global,model_local, datal
             output_global,feat_list_global, feat_map, logit_maps = model_global(image)
         #print(image_v.shape)
         patch_var = Attention_gen_patchs(image_v,logit_maps)
-        output_local,_,_, _ = model_local(patch_var)
+        output_local,_,_, _ = model_local(patch_var,feat_map)
         
 
 
@@ -396,7 +396,7 @@ def train_epoch(summary, summary_dev, cfg, args, model_global,model_local, datal
                      'auc_dev_best': best_dict['auc_dev_best'],
                      'loss_dev_best': best_dict['loss_dev_best'],
                      'state_dict': model_local.module.state_dict()},
-                    os.path.join("/content/drive/MyDrive/learning_chexpert", 'best_local_prev_new{}.ckpt'.format(
+                    os.path.join("/content/drive/MyDrive/learning_chexpert", 'best_local_{}.ckpt'.format(
                         best_dict['best_idx']))
                 )
                 best_dict['best_idx'] += 1
@@ -452,7 +452,7 @@ def test_epoch(summary, cfg, args, model_global,model_local, dataloader):
         output_global,feat_list_global, feat_map, logit_maps = model_global(image)
         #print(image_v.shape)
         patch_var = Attention_gen_patchs(image_v,logit_maps)
-        output_local,feat_list_local,_,_ = model_local(patch_var)
+        output_local,feat_list_local,_,_ = model_local(patch_var, feat_map)
         
         # different number of tasks
         for t in range(len(cfg.num_classes)):
@@ -680,7 +680,7 @@ def run(args):
                  'loss_dev_best': best_dict['loss_dev_best'],
                  'state_dict': model_local.module.state_dict()},
                 os.path.join('/content/drive/MyDrive/learning_chexpert',
-                             'best_local_prev_new{}.ckpt'.format(best_dict['best_idx']))
+                             'best_local_{}.ckpt'.format(best_dict['best_idx']))
             )
             best_dict['best_idx'] += 1
             if best_dict['best_idx'] > cfg.save_top_k:
@@ -709,7 +709,7 @@ def run(args):
                     'auc_dev_best': best_dict['auc_dev_best'],
                     'loss_dev_best': best_dict['loss_dev_best'],
                     'state_dict': model_local.module.state_dict()},
-                   os.path.join("/content/drive/MyDrive/learning_chexpert", 'best_local_prev_new.ckpt')) # saves the model after every epoch by same name , this can be used for resume training
+                   os.path.join("/content/drive/MyDrive/learning_chexpert", 'best_local.ckpt')) # saves the model after every epoch by same name , this can be used for resume training
     summary_writer.close()
 
 

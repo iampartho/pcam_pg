@@ -184,7 +184,7 @@ def Attention_gen_patchs(ori_image, fm_cuda):
         # ori_img = ori_image[i].permute(1,2,0)
         # print(ori_image[i].shape)
         image = ori_image[i].numpy().reshape(256,256,3)
-        #image = image[int(256*0.334):int(256*0.667),int(256*0.334):int(256*0.667),:]
+        image = image[int(256*0.334):int(256*0.667),int(256*0.334):int(256*0.667),:]
 
         image = cv2.resize(image, size_upsample)
         image_crop = image[minh:maxh,minw:maxw,:] * 256 # because image was normalized before
